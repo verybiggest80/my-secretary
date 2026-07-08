@@ -96,10 +96,10 @@ window.Pages.work = (function () {
             <h3>📖 醫師通訊錄</h3>
             <div class="tile-sub">點擊查看全部醫師(可搜尋姓名/代號/電話)</div>
           </div>
-          <div class="tile square" id="w-crrt">
-            <h3>🧮 CRRT</h3>
-            <div class="tile-icon" style="font-size:2rem">🧮</div>
-            <div class="tile-sub">Filtration Fraction 計算</div>
+          <div class="tile square" id="w-helper">
+            <h3>🫘 臨床幫手</h3>
+            <div class="tile-icon" style="font-size:2rem">🫘</div>
+            <div class="tile-sub">FF計算器・會診工具</div>
           </div>
           <div class="tile square" id="w-schedule">
             <h3>📅 班表</h3>
@@ -110,18 +110,19 @@ window.Pages.work = (function () {
         <div class="formula-hint" style="margin-top:8px">資料來源:${SD ? SD.month + ' 班表(' + SD.updated + ' 更新)' : '—'}</div>`;
 
       root.querySelector('#w-dir').addEventListener('click', renderDirectory);
-      root.querySelector('#w-crrt').addEventListener('click', renderCRRT);
+      root.querySelector('#w-helper').addEventListener('click', renderHelper);
       root.querySelector('#w-schedule').addEventListener('click', renderSchedule);
     });
   }
 
-  function backRow() {
+  function backRowTo(label, handler) {
     const div = document.createElement('div');
     div.className = 'back-row';
-    div.innerHTML = `<button class="back-btn">← Work</button>`;
-    div.querySelector('button').addEventListener('click', renderMenu);
+    div.innerHTML = `<button class="back-btn">${label}</button>`;
+    div.querySelector('button').addEventListener('click', handler);
     return div;
   }
+  function backRow() { return backRowTo('← Work', renderMenu); }
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -276,11 +277,94 @@ window.Pages.work = (function () {
     window.scrollTo(0, 0);
   }
 
+  /* ---------- 臨床幫手(子選單) ---------- */
+  function renderHelper() {
+    root.innerHTML = '';
+    root.appendChild(backRow());
+    const grid = document.createElement('div');
+    grid.className = 'tile-grid';
+    grid.innerHTML = `
+      <div class="tile square" id="h-ff">
+        <h3>🧮 FF計算器</h3>
+        <div class="tile-icon" style="font-size:2rem">🧮</div>
+        <div class="tile-sub">CRRT Filtration Fraction</div>
+      </div>
+      <div class="tile square" id="h-consult">
+        <h3>📋 會診工具</h3>
+        <div class="tile-icon" style="font-size:2rem">📋</div>
+        <div class="tile-sub">會診範本・建議回覆</div>
+      </div>`;
+    root.appendChild(grid);
+    grid.querySelector('#h-ff').addEventListener('click', renderCRRT);
+    grid.querySelector('#h-consult').addEventListener('click', renderConsultList);
+  }
+
+  /* ---------- 會診工具:資料延遲載入 ---------- */
+  function ensureConsultData(cb) {
+    if (window.ConsultData) return cb();
+    const s = document.createElement('script');
+    s.src = 'js/consult-data.js';
+    s.onload = cb;
+    s.onerror = cb;
+    document.head.appendChild(s);
+  }
+
+  function renderConsultList() {
+    ensureConsultData(() => {
+      root.innerHTML = '';
+      root.appendChild(backRowTo('← 臨床幫手', renderHelper));
+      const list = window.ConsultData || [];
+      const card = document.createElement('div');
+      card.className = 'work-card';
+      card.innerHTML = `<h2>📋 會診工具</h2>` + (list.length ? `
+        <ul class="consult-list">
+          ${list.map((it, i) => `<li data-i="${i}"><span>${esc(it.title)}</span><span class="chev">›</span></li>`).join('')}
+        </ul>` : '<div class="empty-hint" style="padding:12px 0">無法載入會診範本</div>');
+      root.appendChild(card);
+      card.querySelectorAll('.consult-list li').forEach((li) =>
+        li.addEventListener('click', () => renderConsultDetail(Number(li.dataset.i))));
+      window.scrollTo(0, 0);
+    });
+  }
+
+  function renderConsultDetail(i) {
+    const it = (window.ConsultData || [])[i];
+    if (!it) return renderConsultList();
+    root.innerHTML = '';
+    root.appendChild(backRowTo('← 會診工具', renderConsultList));
+
+    const card = document.createElement('div');
+    card.className = 'work-card';
+    card.innerHTML = `
+      <h2>${esc(it.title)}</h2>
+      <button class="btn-primary" id="copy-consult">📋 複製全文</button>
+      <pre class="consult-body" id="consult-body"></pre>`;
+    card.querySelector('#consult-body').textContent = it.body; // textContent 保證與原檔逐字相同
+    root.appendChild(card);
+
+    card.querySelector('#copy-consult').addEventListener('click', async () => {
+      const btn = card.querySelector('#copy-consult');
+      try {
+        await navigator.clipboard.writeText(it.body);
+      } catch {
+        const ta = document.createElement('textarea');
+        ta.value = it.body;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+      btn.textContent = '✓ 已複製';
+      setTimeout(() => { btn.textContent = '📋 複製全文'; }, 1500);
+    });
+    window.scrollTo(0, 0);
+  }
+
   /* ---------- CRRT:FF 計算器 ---------- */
   function renderCRRT() {
     const saved = ls.get('crrtInputs', {});
     root.innerHTML = '';
-    root.appendChild(backRow());
+    root.appendChild(backRowTo('← 臨床幫手', renderHelper));
 
     const card = document.createElement('div');
     card.className = 'work-card';

@@ -215,6 +215,23 @@ body {
 .dir-code { color: var(--accent); font-weight: 600; min-width: 56px; text-align: right; }
 .dir-phone { color: var(--text-2); min-width: 64px; text-align: right; font-variant-numeric: tabular-nums; }
 
+/* ===== 會診工具 ===== */
+.consult-list { list-style: none; }
+.consult-list li {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  padding: 13px 2px; border-bottom: 1px solid var(--border);
+  font-size: .93rem; font-weight: 500;
+}
+.consult-list li:last-child { border-bottom: none; }
+.consult-list .chev { color: var(--text-2); font-size: 1.1rem; }
+.consult-body {
+  white-space: pre-wrap; word-break: break-word;
+  font-size: .8rem; line-height: 1.55; margin-top: 14px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px;
+  -webkit-user-select: text; user-select: text;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
 /* ===== 雲端班表閱覽器 ===== */
 .pdf-pages img {
   width: 100%; display: block; margin-bottom: 12px;
