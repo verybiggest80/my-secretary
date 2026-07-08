@@ -5,6 +5,15 @@ window.Pages.work = (function () {
 
   let root;
 
+  /* 腎臟圖示(Unicode 無腎臟 emoji,用內嵌 SVG 畫一顆) */
+  const KIDNEY_SVG = (size) => `<svg width="${size}" height="${size}" viewBox="0 0 120 120" style="vertical-align:-0.15em" aria-label="腎臟">
+    <defs><linearGradient id="kgrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e26879"/><stop offset="1" stop-color="#b93a52"/>
+    </linearGradient></defs>
+    <path d="M55 6 C28 6 10 28 10 60 C10 92 28 114 55 114 C70 114 80 106 80 96 C80 88 74 83 67 82 C62 81 62 76 67 74 C74 72 78 66 78 60 C78 54 74 48 67 46 C62 45 62 40 67 38 C74 36 80 31 80 24 C80 14 70 6 55 6 Z" fill="url(#kgrad)"/>
+    <path d="M40 30 C33 38 30 48 30 60" stroke="rgba(255,255,255,.45)" stroke-width="7" stroke-linecap="round" fill="none"/>
+  </svg>`;
+
   /* ---------- 班表資料延遲載入 ---------- */
   function ensureData(cb) {
     if (window.ScheduleData) return cb();
@@ -97,8 +106,8 @@ window.Pages.work = (function () {
             <div class="tile-sub">點擊查看全部醫師(可搜尋姓名/代號/電話)</div>
           </div>
           <div class="tile square" id="w-helper">
-            <h3>🫘 臨床幫手</h3>
-            <div class="tile-icon" style="font-size:2rem">🫘</div>
+            <h3>${KIDNEY_SVG(17)} 臨床幫手</h3>
+            <div class="tile-icon">${KIDNEY_SVG(40)}</div>
             <div class="tile-sub">FF計算器・會診工具</div>
           </div>
           <div class="tile square" id="w-schedule">
@@ -257,7 +266,7 @@ window.Pages.work = (function () {
     refresh();
   }
 
-  /* ---------- 雲端班表閱覽器(App 內開啟,含返回鍵) ---------- */
+  /* ---------- 雲端班表閱覽器(App 內開啟,含返回鍵、自由縮放) ---------- */
   function renderCloudViewer(entry) {
     root.innerHTML = '';
 
@@ -267,13 +276,61 @@ window.Pages.work = (function () {
     back.querySelector('button').addEventListener('click', renderSchedule);
     root.appendChild(back);
 
-    const wrap = document.createElement('div');
-    wrap.className = 'pdf-pages';
+    /* 縮放工具列 */
+    const bar = document.createElement('div');
+    bar.className = 'zoom-bar';
+    bar.innerHTML = `
+      <button id="z-out" aria-label="縮小">−</button>
+      <span id="z-val">100%</span>
+      <button id="z-in" aria-label="放大">＋</button>
+      <button id="z-reset">重設</button>`;
+    root.appendChild(bar);
+
+    const scroll = document.createElement('div');
+    scroll.className = 'zoom-scroll';
+    const inner = document.createElement('div');
+    inner.className = 'zoom-inner';
     const pages = entry.pages || [];
-    wrap.innerHTML =
-      pages.map((p, i) => `<img src="${esc(p)}" alt="${esc(entry.label)}第${i + 1}頁" loading="lazy">`).join('') +
-      (entry.file ? `<a class="btn-secondary" style="display:block;text-align:center;text-decoration:none" href="${esc(entry.file)}" target="_blank" rel="noopener">下載原始檔案</a>` : '');
-    root.appendChild(wrap);
+    inner.innerHTML =
+      pages.map((p, i) => `<img src="${esc(p)}" alt="${esc(entry.label)}第${i + 1}頁" loading="lazy">`).join('');
+    scroll.appendChild(inner);
+    root.appendChild(scroll);
+
+    if (entry.file) {
+      const dl = document.createElement('a');
+      dl.className = 'btn-secondary';
+      dl.style.cssText = 'display:block;text-align:center;text-decoration:none';
+      dl.href = entry.file;
+      dl.target = '_blank';
+      dl.rel = 'noopener';
+      dl.textContent = '下載原始檔案';
+      root.appendChild(dl);
+    }
+
+    /* 縮放:＋/−按鈕 + 雙指開合手勢,放大後可左右拖曳 */
+    let zoom = 1;
+    const setZoom = (z) => {
+      zoom = Math.min(6, Math.max(1, z));
+      inner.style.width = (zoom * 100) + '%';
+      bar.querySelector('#z-val').textContent = Math.round(zoom * 100) + '%';
+    };
+    bar.querySelector('#z-in').addEventListener('click', () => setZoom(zoom * 1.3));
+    bar.querySelector('#z-out').addEventListener('click', () => setZoom(zoom / 1.3));
+    bar.querySelector('#z-reset').addEventListener('click', () => setZoom(1));
+
+    let pinchStart = 0, zoomStart = 1;
+    const dist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+    scroll.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) { pinchStart = dist(e.touches); zoomStart = zoom; }
+    }, { passive: true });
+    scroll.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2 && pinchStart > 0) {
+        e.preventDefault();
+        setZoom(zoomStart * dist(e.touches) / pinchStart);
+      }
+    }, { passive: false });
+    scroll.addEventListener('touchend', () => { pinchStart = 0; });
+
     window.scrollTo(0, 0);
   }
 
