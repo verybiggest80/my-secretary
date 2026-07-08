@@ -11,6 +11,7 @@
     work: document.getElementById('page-work')
   };
   const headerBtn = document.getElementById('header-action');
+  const gearBtn = document.getElementById('header-gear');
   const titleEl = document.getElementById('page-title');
 
   function loadScript(name) {
@@ -28,7 +29,7 @@
     await loadScript(name);
     const page = window.Pages[name];
     if (!inited[name]) {
-      page.init(container[name], { headerBtn, navigate });
+      page.init(container[name], { headerBtn, gearBtn, titleEl, navigate });
       inited[name] = true;
     }
 
@@ -39,6 +40,7 @@
 
     titleEl.textContent = TITLES[name];
     headerBtn.classList.add('hidden');
+    gearBtn.classList.add('hidden');
 
     if (page.show) page.show(subview);
     window.scrollTo(0, 0);

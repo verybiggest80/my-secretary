@@ -1,22 +1,26 @@
-/* home.js — Dashboard:可自訂大小(square/bar)與順序的方塊 */
+/* home.js — Dashboard:時段問候語、可自訂方塊(square/bar+順序)、設置(名字) */
 window.Pages.home = (function () {
   const ls = window.Store.ls;
 
   const DEFAULT_TILES = [
     { id: 'date', size: 'bar' },
     { id: 'todo', size: 'bar' },
-    { id: 'schedule', size: 'square' },
-    { id: 'crrt', size: 'square' }
+    { id: 'schedule', size: 'square' }
   ];
 
-  let root, nav, headerBtn;
+  let root, nav, headerBtn, gearBtn, titleEl;
   let editing = false;
 
-  function tiles() { return ls.get('tiles', DEFAULT_TILES); }
-  function saveTiles(t) { ls.set('tiles', t); }
-
   function esc(s) {
-    return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  /* 時段問候語:5-11 早安、11-18 午安、其餘 晚安 */
+  function greeting() {
+    const h = new Date().getHours();
+    const g = (h >= 5 && h < 11) ? '早安' : (h >= 11 && h < 18) ? '午安' : '晚安';
+    const name = (ls.get('userName', '') || '').trim();
+    return name ? `${g},${name}` : g;
   }
 
   const RENDERERS = {
@@ -25,7 +29,7 @@ window.Pages.home = (function () {
       const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
       return {
         title: '今天',
-        body: `<div class="tile-big">${now.getMonth() + 1}/${now.getDate()}</div>
+        body: `<div class="tile-big">${now.getMonth() + 1}月${now.getDate()}日</div>
                <div class="tile-sub">${now.getFullYear()} 年・星期${weekdays[now.getDay()]}</div>`,
         onTap: null
       };
@@ -49,16 +53,15 @@ window.Pages.home = (function () {
                <div class="tile-sub">查看/上傳本月班表</div>`,
         onTap: () => nav('work', 'schedule')
       };
-    },
-    crrt() {
-      return {
-        title: '🧮 CRRT',
-        body: `<div class="tile-icon" style="font-size:2.2rem">🧮</div>
-               <div class="tile-sub">Filtration Fraction 計算器</div>`,
-        onTap: () => nav('work', 'crrt')
-      };
     }
   };
+
+  /* 讀取方塊設定;過濾已移除的方塊(如舊版的 CRRT) */
+  function tiles() {
+    const t = ls.get('tiles', DEFAULT_TILES).filter((x) => RENDERERS[x.id]);
+    return t.length ? t : DEFAULT_TILES;
+  }
+  function saveTiles(t) { ls.set('tiles', t); }
 
   function render() {
     const t = tiles();
@@ -66,9 +69,7 @@ window.Pages.home = (function () {
     const grid = root.firstElementChild;
 
     t.forEach((cfg, idx) => {
-      const r = RENDERERS[cfg.id];
-      if (!r) return;
-      const { title, body, onTap } = r();
+      const { title, body, onTap } = RENDERERS[cfg.id]();
       const el = document.createElement('div');
       el.className = `tile ${cfg.size}`;
       el.innerHTML = `<h3>${title}</h3>${body}`;
@@ -99,14 +100,44 @@ window.Pages.home = (function () {
     });
   }
 
+  /* 設置頁:設定名字 */
+  function renderSettings() {
+    headerBtn.classList.add('hidden');
+    root.innerHTML = `
+      <div class="work-card">
+        <h2>⚙️ 設置</h2>
+        <div class="field">
+          <label for="set-name">你的名字(顯示在首頁問候語)</label>
+          <input id="set-name" type="text" value="${esc(ls.get('userName', ''))}" placeholder="例:Jeffrey" autocomplete="off">
+        </div>
+        <button id="set-save" class="btn-primary">儲存</button>
+        <button id="set-back" class="btn-secondary">返回</button>
+      </div>`;
+
+    const done = () => {
+      titleEl.textContent = greeting();
+      headerBtn.classList.remove('hidden');
+      render();
+    };
+    root.querySelector('#set-save').addEventListener('click', () => {
+      ls.set('userName', root.querySelector('#set-name').value.trim());
+      done();
+    });
+    root.querySelector('#set-back').addEventListener('click', done);
+  }
+
   function init(el, ctx) {
     root = el;
     nav = ctx.navigate;
     headerBtn = ctx.headerBtn;
+    gearBtn = ctx.gearBtn;
+    titleEl = ctx.titleEl;
   }
 
   function show() {
     editing = false;
+    titleEl.textContent = greeting();
+
     headerBtn.textContent = '編輯';
     headerBtn.classList.remove('hidden');
     headerBtn.onclick = () => {
@@ -114,9 +145,12 @@ window.Pages.home = (function () {
       headerBtn.textContent = editing ? '完成' : '編輯';
       render();
     };
+
+    gearBtn.classList.remove('hidden');
+    gearBtn.onclick = renderSettings;
+
     render();
   }
 
   return { init, show };
 })();
-/* end */
