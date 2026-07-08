@@ -102,9 +102,9 @@ window.Pages.work = (function () {
             <div class="tile-sub">Filtration Fraction 計算</div>
           </div>
           <div class="tile square" id="w-schedule">
-            <h3>📅 班表原檔</h3>
+            <h3>📅 班表</h3>
             <div class="tile-icon" style="font-size:2rem">📅</div>
-            <div class="tile-sub">上傳/查看班表檔案</div>
+            <div class="tile-sub">查看雲端/本機班表</div>
           </div>
         </div>
         <div class="formula-hint" style="margin-top:8px">資料來源:${SD ? SD.month + ' 班表(' + SD.updated + ' 更新)' : '—'}</div>`;
@@ -165,22 +165,30 @@ window.Pages.work = (function () {
     root.innerHTML = '';
     root.appendChild(backRow());
 
-    /* 雲端班表:隨網站部署,所有裝置皆可開啟 */
+    /* 雲端班表:隨網站部署,所有裝置皆可開啟(每個檔案一張卡片) */
     const SD = window.ScheduleData;
-    const cloud = document.createElement('div');
-    cloud.className = 'work-card';
-    cloud.innerHTML = `<h2>☁️ 雲端班表</h2>` + ((SD && (SD.pages || SD.pdf)) ? `
-      <div class="schedule-current">
-        <span class="file-icon">📄</span>
-        <div class="schedule-meta">
-          <div class="fname">${esc(SD.pdfLabel || SD.month + ' 班表')}</div>
-          <div class="fdate">${esc(SD.month)}・所有裝置皆可開啟</div>
-        </div>
-        <button id="cloud-open" style="border:none;background:var(--accent);color:#fff;padding:8px 14px;border-radius:10px;font-weight:600">開啟</button>
-      </div>` : '<div class="empty-hint" style="padding:12px 0">尚無雲端班表</div>');
-    root.appendChild(cloud);
-    const openBtn = cloud.querySelector('#cloud-open');
-    if (openBtn) openBtn.addEventListener('click', renderCloudViewer);
+    const entries = (SD && SD.cloud) || [];
+    if (entries.length === 0) {
+      const cloud = document.createElement('div');
+      cloud.className = 'work-card';
+      cloud.innerHTML = `<h2>☁️ 雲端班表</h2><div class="empty-hint" style="padding:12px 0">尚無雲端班表</div>`;
+      root.appendChild(cloud);
+    }
+    entries.forEach((entry) => {
+      const cloud = document.createElement('div');
+      cloud.className = 'work-card';
+      cloud.innerHTML = `<h2>☁️ ${esc(entry.title || '雲端班表')}</h2>
+        <div class="schedule-current">
+          <span class="file-icon">📄</span>
+          <div class="schedule-meta">
+            <div class="fname">${esc(entry.label)}</div>
+            <div class="fdate">${esc(entry.month || '')}・所有裝置皆可開啟</div>
+          </div>
+          <button class="cloud-open" style="border:none;background:var(--accent);color:#fff;padding:8px 14px;border-radius:10px;font-weight:600">開啟</button>
+        </div>`;
+      cloud.querySelector('.cloud-open').addEventListener('click', () => renderCloudViewer(entry));
+      root.appendChild(cloud);
+    });
 
     const card = document.createElement('div');
     card.className = 'work-card';
@@ -249,8 +257,7 @@ window.Pages.work = (function () {
   }
 
   /* ---------- 雲端班表閱覽器(App 內開啟,含返回鍵) ---------- */
-  function renderCloudViewer() {
-    const SD = window.ScheduleData;
+  function renderCloudViewer(entry) {
     root.innerHTML = '';
 
     const back = document.createElement('div');
@@ -261,10 +268,10 @@ window.Pages.work = (function () {
 
     const wrap = document.createElement('div');
     wrap.className = 'pdf-pages';
-    const pages = (SD && SD.pages) || [];
+    const pages = entry.pages || [];
     wrap.innerHTML =
-      pages.map((p, i) => `<img src="${esc(p)}" alt="班表第${i + 1}頁" loading="lazy">`).join('') +
-      (SD && SD.pdf ? `<a class="btn-secondary" style="display:block;text-align:center;text-decoration:none" href="${esc(SD.pdf)}" target="_blank" rel="noopener">下載 PDF 原檔</a>` : '');
+      pages.map((p, i) => `<img src="${esc(p)}" alt="${esc(entry.label)}第${i + 1}頁" loading="lazy">`).join('') +
+      (entry.file ? `<a class="btn-secondary" style="display:block;text-align:center;text-decoration:none" href="${esc(entry.file)}" target="_blank" rel="noopener">下載原始檔案</a>` : '');
     root.appendChild(wrap);
     window.scrollTo(0, 0);
   }

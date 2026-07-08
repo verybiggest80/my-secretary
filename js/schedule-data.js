@@ -2,12 +2,33 @@
 window.ScheduleData = {
   month: "2026-07",
   updated: "2026-07-08",
-  pdf: "files/schedule-2026-07.pdf",
-  pdfLabel: "07月腎臟科6合1班表",
-  pages: [
-    "files/schedule-2026-07/p1.jpg", "files/schedule-2026-07/p2.jpg",
-    "files/schedule-2026-07/p3.jpg", "files/schedule-2026-07/p4.jpg",
-    "files/schedule-2026-07/p5.jpg", "files/schedule-2026-07/p6.jpg"
+  /* 雲端班表清單:每月更新 */
+  cloud: [
+    {
+      title: "腎臟科班表",
+      label: "07月腎臟科6合1班表",
+      month: "2026-07",
+      file: "files/schedule-2026-07.pdf",
+      pages: [
+        "files/schedule-2026-07/p1.jpg", "files/schedule-2026-07/p2.jpg",
+        "files/schedule-2026-07/p3.jpg", "files/schedule-2026-07/p4.jpg",
+        "files/schedule-2026-07/p5.jpg", "files/schedule-2026-07/p6.jpg"
+      ]
+    },
+    {
+      title: "大內科班表",
+      label: "07月大內科班表",
+      month: "2026-07",
+      file: "files/medicine-2026-07.xlsx",
+      pages: [
+        "files/medicine-2026-07/p1.jpg", "files/medicine-2026-07/p2.jpg",
+        "files/medicine-2026-07/p3.jpg", "files/medicine-2026-07/p4.jpg",
+        "files/medicine-2026-07/p5.jpg", "files/medicine-2026-07/p6.jpg",
+        "files/medicine-2026-07/p7.jpg", "files/medicine-2026-07/p8.jpg",
+        "files/medicine-2026-07/p9.jpg", "files/medicine-2026-07/p10.jpg",
+        "files/medicine-2026-07/p11.jpg", "files/medicine-2026-07/p12.jpg"
+      ]
+    }
   ],
   /* 每日普通會診醫師(平日;假日改急會診由值班醫師負責)— 班表第2頁<會診> */
   consult: {
