@@ -1,5 +1,5 @@
 /* Service Worker — 頁面採網路優先(確保拿到新版),資源採快取優先+背景更新 */
-const VERSION = 'v1.3.0';
+const VERSION = 'v1.4.0';
 const CACHE = `secretary-${VERSION}`;
 const SHELL = [
   './',
@@ -18,7 +18,12 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  /* no-cache:安裝新版時強制從網路抓最新檔案,不吃 HTTP 快取 */
+  e.waitUntil(
+    caches.open(CACHE)
+      .then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: 'no-cache' }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (e) => {

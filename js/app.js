@@ -52,10 +52,27 @@
   /* 首頁優先載入,其餘分頁點擊時才載入 */
   navigate('home');
 
-  /* PWA service worker(僅在 http/https 環境註冊;file:// 直接開時跳過) */
+  /* PWA service worker(僅在 http/https 環境註冊;file:// 直接開時跳過)
+     含自動更新:開啟或切回前景時背景檢查,偵測到新版自動重新載入 */
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
+      navigator.serviceWorker.register('./sw.js').then((reg) => {
+        const check = () => reg.update().catch(() => {});
+        check();
+        setInterval(check, 30 * 60 * 1000); // 每30分鐘
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') check(); // App 切回前景時
+        });
+      }).catch(() => {});
+
+      let hadController = !!navigator.serviceWorker.controller;
+      let reloaded = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController) { hadController = true; return; } // 首次安裝不重載
+        if (reloaded) return;
+        reloaded = true;
+        location.reload(); // 新版本接管 → 自動重新載入
+      });
     });
   }
 })();
