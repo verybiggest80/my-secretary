@@ -1,42 +1,161 @@
+/* work.js — Work 分頁:當日會診/值班/內外ICU + 醫師通訊錄 + 班表檔案 + CRRT FF 計算器 */
 window.Pages.work = (function () {
   const ls = window.Store.ls;
   const fileStore = window.Store.fileStore;
 
   let root;
 
-  function renderMenu() {
-    root.innerHTML = `
-      <div class="tile-grid">
-        <div class="tile square" id="w-schedule">
-          <h3>📅 班表</h3>
-          <div class="tile-icon" style="font-size:2.2rem">📅</div>
-          <div class="tile-sub">每月上傳最新班表</div>
-        </div>
-        <div class="tile square" id="w-crrt">
-          <h3>🧮 CRRT</h3>
-          <div class="tile-icon" style="font-size:2.2rem">🧮</div>
-          <div class="tile-sub">Filtration Fraction 計算</div>
-        </div>
-      </div>`;
-    root.querySelector('#w-schedule').addEventListener('click', renderSchedule);
-    root.querySelector('#w-crrt').addEventListener('click', renderCRRT);
+  /* ---------- 班表資料延遲載入 ---------- */
+  function ensureData(cb) {
+    if (window.ScheduleData) return cb();
+    const s = document.createElement('script');
+    s.src = 'js/schedule-data.js';
+    s.onload = cb;
+    s.onerror = cb; // 載入失敗也繼續,畫面會顯示「尚未更新」
+    document.head.appendChild(s);
   }
 
-  function backRow(label = '← Work') {
+  function findDoc(name) {
+    const SD = window.ScheduleData;
+    const d = SD && SD.directory.find((x) => x.name === name);
+    return { name: name || '—', code: d ? d.code : '—', phone: (d && d.phone) || '—' };
+  }
+
+  /* 取得今日資訊;若資料月份與本月不符回傳 null */
+  function todayInfo() {
+    const SD = window.ScheduleData;
+    if (!SD) return null;
+    const now = new Date();
+    const ym = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    if (SD.month !== ym) return null;
+    const d = now.getDate();
+    let consultNote = '';
+    let consultName = SD.consult[d];
+    if (!consultName) { consultName = SD.oncallB[d]; consultNote = '假日改急會診,由值班醫師負責'; }
+    const inRange = (arr) => { const r = arr.find((r) => d >= r.from && d <= r.to); return r ? r.name : null; };
+    return {
+      day: d,
+      consult: findDoc(consultName), consultNote,
+      oncall: findDoc(SD.oncallB[d]),
+      icuMed: findDoc(inRange(SD.icuMed)),
+      icuSurg: findDoc(inRange(SD.icuSurg))
+    };
+  }
+
+  function docTile(id, icon, title, doc, note) {
+    return `
+      <div class="tile square doc-tile" id="${id}">
+        <h3>${icon} ${title}</h3>
+        <div>
+          <div class="doc-name">${doc.name}</div>
+          <div class="doc-meta">代號 <b>${doc.code}</b></div>
+          <div class="doc-meta">☎ <b>${doc.phone}</b></div>
+          ${note ? `<div class="doc-note">${note}</div>` : ''}
+        </div>
+      </div>`;
+  }
+
+  /* ---------- 主選單(方塊) ---------- */
+  function renderMenu() {
+    ensureData(() => {
+      const info = todayInfo();
+      const SD = window.ScheduleData;
+      const now = new Date();
+
+      let tilesHtml;
+      if (info) {
+        tilesHtml = `
+          ${docTile('w-consult', '🩺', '會診', info.consult, info.consultNote)}
+          ${docTile('w-oncall', '🌙', '值班', info.oncall)}
+          ${docTile('w-icu-med', '🫁', '內ICU', info.icuMed)}
+          ${docTile('w-icu-surg', '🔧', '外ICU', info.icuSurg)}`;
+      } else {
+        tilesHtml = `
+          <div class="tile bar">
+            <h3>⚠️ 班表尚未更新</h3>
+            <div class="tile-sub">目前資料為 ${SD ? SD.month : '無'},請上傳 ${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')} 的班表給 Claude 更新。</div>
+          </div>`;
+      }
+
+      root.innerHTML = `
+        <div class="tile-grid">
+          ${tilesHtml}
+          <div class="tile bar" id="w-dir">
+            <h3>📖 醫師通訊錄</h3>
+            <div class="tile-sub">點擊查看全部醫師(可搜尋姓名/代號/電話)</div>
+          </div>
+          <div class="tile square" id="w-crrt">
+            <h3>🧮 CRRT</h3>
+            <div class="tile-icon" style="font-size:2rem">🧮</div>
+            <div class="tile-sub">Filtration Fraction 計算</div>
+          </div>
+          <div class="tile square" id="w-schedule">
+            <h3>📅 班表原檔</h3>
+            <div class="tile-icon" style="font-size:2rem">📅</div>
+            <div class="tile-sub">上傳/查看班表檔案</div>
+          </div>
+        </div>
+        <div class="formula-hint" style="margin-top:8px">資料來源:${SD ? SD.month + ' 班表(' + SD.updated + ' 更新)' : '—'}</div>`;
+
+      root.querySelector('#w-dir').addEventListener('click', renderDirectory);
+      root.querySelector('#w-crrt').addEventListener('click', renderCRRT);
+      root.querySelector('#w-schedule').addEventListener('click', renderSchedule);
+    });
+  }
+
+  function backRow() {
     const div = document.createElement('div');
     div.className = 'back-row';
-    div.innerHTML = `<button class="back-btn">${label}</button>`;
+    div.innerHTML = `<button class="back-btn">← Work</button>`;
     div.querySelector('button').addEventListener('click', renderMenu);
     return div;
   }
 
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  /* ---------- 醫師通訊錄(含搜尋) ---------- */
+  function renderDirectory() {
+    root.innerHTML = '';
+    root.appendChild(backRow());
+
+    const card = document.createElement('div');
+    card.className = 'work-card';
+    card.innerHTML = `
+      <h2>📖 醫師通訊錄</h2>
+      <div class="field" style="margin-bottom:8px">
+        <input id="dir-q" type="search" placeholder="搜尋姓名 / 代號 / 電話…" autocomplete="off">
+      </div>
+      <ul class="dir-list" id="dir-list"></ul>`;
+    root.appendChild(card);
+
+    const listEl = card.querySelector('#dir-list');
+    const all = (window.ScheduleData && window.ScheduleData.directory) || [];
+
+    function draw(q) {
+      q = (q || '').trim().toLowerCase();
+      const rows = all.filter((d) =>
+        !q || d.name.toLowerCase().includes(q) || d.code.toLowerCase().includes(q) || (d.phone || '').includes(q));
+      listEl.innerHTML = rows.map((d) => `
+        <li>
+          <span class="dir-name">${esc(d.name)}</span>
+          <span class="dir-code">${esc(d.code)}</span>
+          <span class="dir-phone">${esc(d.phone || '—')}</span>
+        </li>`).join('') || '<div class="empty-hint" style="padding:20px 0">查無符合的醫師</div>';
+    }
+    draw('');
+    card.querySelector('#dir-q').addEventListener('input', (e) => draw(e.target.value));
+  }
+
+  /* ---------- 班表原檔 ---------- */
   async function renderSchedule() {
     root.innerHTML = '';
     root.appendChild(backRow());
 
     const card = document.createElement('div');
     card.className = 'work-card';
-    card.innerHTML = `<h2>📅 班表</h2><div id="sch-body">載入中…</div>
+    card.innerHTML = `<h2>📅 班表原檔</h2><div id="sch-body">載入中…</div>
       <input id="sch-file" type="file" class="hidden">
       <button id="sch-upload" class="btn-primary">上傳新班表</button>`;
     root.appendChild(card);
@@ -55,7 +174,7 @@ window.Pages.work = (function () {
         <div class="schedule-current">
           <span class="file-icon">📄</span>
           <div class="schedule-meta">
-            <div class="fname">${latest.name}</div>
+            <div class="fname">${esc(latest.name)}</div>
             <div class="fdate">上傳於 ${new Date(latest.date).toLocaleDateString('zh-TW')}</div>
           </div>
           <button class="h-open" data-id="${latest.id}" style="border:none;background:var(--accent);color:#fff;padding:8px 14px;border-radius:10px;font-weight:600">開啟</button>
@@ -65,7 +184,7 @@ window.Pages.work = (function () {
           <ul class="history-list">
             ${files.slice(1).map((f) => `
               <li>
-                <span class="h-name">${f.name}<br><small style="color:var(--text-2)">${new Date(f.date).toLocaleDateString('zh-TW')}</small></span>
+                <span class="h-name">${esc(f.name)}<br><small style="color:var(--text-2)">${new Date(f.date).toLocaleDateString('zh-TW')}</small></span>
                 <button class="h-open" data-id="${f.id}">開啟</button>
                 <button class="h-del" data-id="${f.id}">✕</button>
               </li>`).join('')}
@@ -100,6 +219,7 @@ window.Pages.work = (function () {
     refresh();
   }
 
+  /* ---------- CRRT:FF 計算器 ---------- */
   function renderCRRT() {
     const saved = ls.get('crrtInputs', {});
     root.innerHTML = '';
@@ -173,6 +293,7 @@ window.Pages.work = (function () {
     show(subview) {
       if (subview === 'schedule') renderSchedule();
       else if (subview === 'crrt') renderCRRT();
+      else if (subview === 'directory') renderDirectory();
       else renderMenu();
     }
   };

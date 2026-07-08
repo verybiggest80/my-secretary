@@ -196,3 +196,20 @@ body {
 .history-list .h-del { border: none; background: none; color: var(--danger); font-size: .95rem; }
 
 .section-label { font-size: .8rem; color: var(--text-2); font-weight: 600; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: .04em; }
+
+/* ===== 當日醫師資訊方塊 ===== */
+.doc-tile .doc-name { font-size: 1.45rem; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+.doc-tile .doc-meta { font-size: .85rem; color: var(--text-2); line-height: 1.6; }
+.doc-tile .doc-meta b { color: var(--text); font-weight: 600; }
+.doc-tile .doc-note { font-size: .7rem; color: var(--warn); margin-top: 4px; line-height: 1.4; }
+
+/* ===== 醫師通訊錄 ===== */
+.dir-list { list-style: none; }
+.dir-list li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 2px; border-bottom: 1px solid var(--border); font-size: .95rem;
+}
+.dir-list li:last-child { border-bottom: none; }
+.dir-name { flex: 1; font-weight: 600; }
+.dir-code { color: var(--accent); font-weight: 600; min-width: 56px; text-align: right; }
+.dir-phone { color: var(--text-2); min-width: 64px; text-align: right; font-variant-numeric: tabular-nums; }

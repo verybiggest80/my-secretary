@@ -1,5 +1,5 @@
 /* Service Worker — app shell 採 cache-first,離線可用 */
-const VERSION = 'v1.0.0';
+const VERSION = 'v1.1.0';
 const CACHE = `secretary-${VERSION}`;
 const SHELL = [
   './',
@@ -8,6 +8,7 @@ const SHELL = [
   './css/app.css',
   './js/app.js',
   './js/store.js',
+  './js/schedule-data.js',
   './js/pages/home.js',
   './js/pages/todo.js',
   './js/pages/work.js',
@@ -37,7 +38,4 @@ self.addEventListener('fetch', (e) => {
         const clone = res.clone();
         caches.open(CACHE).then((c) => c.put(e.request, clone));
       }
-      return res;
-    }))
-  );
-});
+      re

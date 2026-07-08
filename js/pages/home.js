@@ -1,3 +1,4 @@
+/* home.js — Dashboard:可自訂大小(square/bar)與順序的方塊 */
 window.Pages.home = (function () {
   const ls = window.Store.ls;
 
@@ -118,3 +119,4 @@ window.Pages.home = (function () {
 
   return { init, show };
 })();
+/* end */

@@ -1,3 +1,5 @@
+/* store.js — 資料層:localStorage(小型設定/待辦)+ IndexedDB(檔案 blob)
+   以 window.Store 提供,不使用 ES modules,file:// 直接開也能運作 */
 (function () {
   const LS_PREFIX = 'sec_';
 
@@ -13,6 +15,7 @@
     }
   };
 
+  /* ---- IndexedDB:存班表等檔案 ---- */
   const DB_NAME = 'secretary-db';
   const DB_VER = 1;
   const FILES = 'files';
@@ -32,7 +35,7 @@
   }
 
   const fileStore = {
-    async add(record) {
+    async add(record) { // { category, name, type, blob, date }
       const db = await openDB();
       return new Promise((resolve, reject) => {
         const tx = db.transaction(FILES, 'readwrite');
@@ -68,3 +71,4 @@
 
   window.Store = { ls, fileStore };
 })();
+/* end */

@@ -1,8 +1,9 @@
+/* todo.js — 待辦事項:新增、打勾完成、篩選(未完成/全部) */
 window.Pages.todo = (function () {
   const ls = window.Store.ls;
 
   let root;
-  let filter = ls.get('todoFilter', 'open');
+  let filter = ls.get('todoFilter', 'open'); // 'open' | 'all'
 
   function todos() { return ls.get('todos', []); }
   function save(t) { ls.set('todos', t); }
@@ -76,3 +77,4 @@ window.Pages.todo = (function () {
     show() { render(); }
   };
 })();
+/* end */
