@@ -1,0 +1,198 @@
+/* ===== 基礎與主題 ===== */
+:root {
+  --bg: #f5f7fa;
+  --card: #ffffff;
+  --text: #1a2332;
+  --text-2: #6b7685;
+  --accent: #0e7490;
+  --accent-soft: #e0f2f7;
+  --border: #e4e8ee;
+  --danger: #dc2626;
+  --ok: #16a34a;
+  --warn: #d97706;
+  --radius: 16px;
+  --tab-h: 56px;
+  --shadow: 0 1px 3px rgba(20, 30, 50, .07);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1419;
+    --card: #1c2430;
+    --text: #e8ecf2;
+    --text-2: #8b96a5;
+    --accent: #22b8d4;
+    --accent-soft: #12333d;
+    --border: #2a3441;
+    --shadow: 0 1px 3px rgba(0, 0, 0, .3);
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100%;
+  overscroll-behavior-y: none;
+}
+
+/* ===== Header ===== */
+.app-header {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: calc(env(safe-area-inset-top) + 12px) 18px 12px;
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+}
+.app-header h1 { font-size: 1.5rem; font-weight: 700; }
+.header-btn {
+  border: none; background: var(--accent-soft); color: var(--accent);
+  font-size: .9rem; font-weight: 600; padding: 7px 14px; border-radius: 20px;
+}
+.hidden { display: none !important; }
+
+/* ===== 頁面容器 ===== */
+#page-container { padding: 4px 16px calc(var(--tab-h) + env(safe-area-inset-bottom) + 24px); }
+.page { display: none; }
+.page.active { display: block; animation: fadein .18s ease; }
+@keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
+
+/* ===== 底部分頁列 ===== */
+.tab-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  display: flex;
+  height: calc(var(--tab-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  border-top: 1px solid var(--border);
+}
+.tab {
+  flex: 1; border: none; background: none; color: var(--text-2);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  font-size: .68rem;
+}
+.tab .tab-icon { font-size: 1.35rem; line-height: 1; }
+.tab.active { color: var(--accent); font-weight: 600; }
+
+/* ===== Dashboard 方塊格 ===== */
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.tile {
+  background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 14px; position: relative; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: space-between;
+  border: 1px solid var(--border);
+}
+.tile.square { grid-column: span 1; aspect-ratio: 1 / 1; }
+.tile.bar { grid-column: span 2; min-height: 84px; }
+.tile:active { transform: scale(.97); transition: transform .1s; }
+.tile h3 { font-size: .95rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.tile .tile-big { font-size: 1.9rem; font-weight: 700; color: var(--accent); }
+.tile .tile-sub { font-size: .78rem; color: var(--text-2); line-height: 1.5; }
+.tile .tile-icon { font-size: 1.5rem; }
+
+/* 編輯模式 */
+.tile-grid.editing .tile { border: 1.5px dashed var(--accent); }
+.tile-controls {
+  position: absolute; top: 6px; right: 6px; display: flex; gap: 4px;
+}
+.tile-controls button {
+  width: 28px; height: 28px; border-radius: 50%; border: none;
+  background: var(--accent); color: #fff; font-size: .8rem; line-height: 1;
+}
+
+/* ===== To Do ===== */
+.todo-input-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.todo-input-row input {
+  flex: 1; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--card); color: var(--text); font-size: 1rem;
+}
+.todo-input-row button {
+  padding: 0 18px; border: none; border-radius: 12px;
+  background: var(--accent); color: #fff; font-size: 1.3rem; font-weight: 600;
+}
+.segmented {
+  display: flex; background: var(--card); border-radius: 12px; padding: 3px;
+  border: 1px solid var(--border); margin-bottom: 14px;
+}
+.segmented button {
+  flex: 1; border: none; background: none; padding: 8px; border-radius: 9px;
+  color: var(--text-2); font-size: .88rem; font-weight: 500;
+}
+.segmented button.active { background: var(--accent); color: #fff; font-weight: 600; }
+.todo-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.todo-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px;
+}
+.todo-check {
+  width: 24px; height: 24px; min-width: 24px; border-radius: 50%;
+  border: 2px solid var(--text-2); background: none; color: transparent;
+  font-size: .85rem; line-height: 1; display: flex; align-items: center; justify-content: center;
+}
+.todo-check.done { background: var(--ok); border-color: var(--ok); color: #fff; }
+.todo-text { flex: 1; font-size: .95rem; word-break: break-word; }
+.todo-item.done .todo-text { text-decoration: line-through; color: var(--text-2); }
+.todo-del { border: none; background: none; color: var(--text-2); font-size: 1.1rem; padding: 4px; }
+.empty-hint { text-align: center; color: var(--text-2); padding: 40px 0; font-size: .9rem; }
+
+/* ===== Work ===== */
+.back-row { margin-bottom: 12px; }
+.back-btn { border: none; background: none; color: var(--accent); font-size: 1rem; font-weight: 600; padding: 4px 0; }
+.work-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; margin-bottom: 14px;
+}
+.work-card h2 { font-size: 1.1rem; margin-bottom: 12px; }
+
+/* 表單 */
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: .82rem; color: var(--text-2); margin-bottom: 5px; font-weight: 500; }
+.field input {
+  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text); font-size: 1.05rem;
+}
+.field input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+.btn-primary {
+  width: 100%; padding: 14px; border: none; border-radius: 12px;
+  background: var(--accent); color: #fff; font-size: 1.05rem; font-weight: 600; margin-top: 6px;
+}
+.btn-secondary {
+  width: 100%; padding: 12px; border: 1px solid var(--accent); border-radius: 12px;
+  background: none; color: var(--accent); font-size: .95rem; font-weight: 600; margin-top: 8px;
+}
+
+/* FF 結果 */
+.ff-result {
+  margin-top: 16px; padding: 16px; border-radius: 12px; text-align: center;
+  background: var(--accent-soft);
+}
+.ff-result .ff-value { font-size: 2.2rem; font-weight: 700; color: var(--accent); }
+.ff-result.warn { background: color-mix(in srgb, var(--warn) 14%, transparent); }
+.ff-result.warn .ff-value { color: var(--warn); }
+.ff-result .ff-note { font-size: .8rem; color: var(--text-2); margin-top: 6px; line-height: 1.5; }
+.formula-hint { font-size: .75rem; color: var(--text-2); margin-top: 10px; line-height: 1.6; }
+
+/* 班表 */
+.schedule-current { display: flex; align-items: center; gap: 12px; }
+.schedule-current .file-icon { font-size: 2rem; }
+.schedule-meta { flex: 1; min-width: 0; }
+.schedule-meta .fname { font-weight: 600; font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.schedule-meta .fdate { font-size: .78rem; color: var(--text-2); }
+.history-list { list-style: none; margin-top: 8px; }
+.history-list li {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  padding: 10px 2px; border-bottom: 1px solid var(--border); font-size: .85rem;
+}
+.history-list li:last-child { border-bottom: none; }
+.history-list .h-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-list .h-open { border: none; background: none; color: var(--accent); font-weight: 600; font-size: .85rem; }
+.history-list .h-del { border: none; background: none; color: var(--danger); font-size: .95rem; }
+
+.section-label { font-size: .8rem; color: var(--text-2); font-weight: 600; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: .04em; }
