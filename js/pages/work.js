@@ -153,9 +153,24 @@ window.Pages.work = (function () {
     root.innerHTML = '';
     root.appendChild(backRow());
 
+    /* 雲端班表:隨網站部署,所有裝置皆可開啟 */
+    const SD = window.ScheduleData;
+    const cloud = document.createElement('div');
+    cloud.className = 'work-card';
+    cloud.innerHTML = `<h2>☁️ 雲端班表</h2>` + ((SD && SD.pdf) ? `
+      <div class="schedule-current">
+        <span class="file-icon">📄</span>
+        <div class="schedule-meta">
+          <div class="fname">${esc(SD.pdfLabel || SD.month + ' 班表')}</div>
+          <div class="fdate">${esc(SD.month)}・所有裝置皆可開啟</div>
+        </div>
+        <a href="${esc(SD.pdf)}" target="_blank" rel="noopener" style="border:none;background:var(--accent);color:#fff;padding:8px 14px;border-radius:10px;font-weight:600;text-decoration:none">開啟</a>
+      </div>` : '<div class="empty-hint" style="padding:12px 0">尚無雲端班表</div>');
+    root.appendChild(cloud);
+
     const card = document.createElement('div');
     card.className = 'work-card';
-    card.innerHTML = `<h2>📅 班表原檔</h2><div id="sch-body">載入中…</div>
+    card.innerHTML = `<h2>📱 本機檔案</h2><div id="sch-body">載入中…</div>
       <input id="sch-file" type="file" class="hidden">
       <button id="sch-upload" class="btn-primary">上傳新班表</button>`;
     root.appendChild(card);
@@ -291,10 +306,12 @@ window.Pages.work = (function () {
   return {
     init(el) { root = el; },
     show(subview) {
-      if (subview === 'schedule') renderSchedule();
-      else if (subview === 'crrt') renderCRRT();
-      else if (subview === 'directory') renderDirectory();
-      else renderMenu();
+      ensureData(() => {
+        if (subview === 'schedule') renderSchedule();
+        else if (subview === 'crrt') renderCRRT();
+        else if (subview === 'directory') renderDirectory();
+        else renderMenu();
+      });
     }
   };
 })();
