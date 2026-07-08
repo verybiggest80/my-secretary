@@ -4,6 +4,11 @@ window.ScheduleData = {
   updated: "2026-07-08",
   pdf: "files/schedule-2026-07.pdf",
   pdfLabel: "07月腎臟科6合1班表",
+  pages: [
+    "files/schedule-2026-07/p1.jpg", "files/schedule-2026-07/p2.jpg",
+    "files/schedule-2026-07/p3.jpg", "files/schedule-2026-07/p4.jpg",
+    "files/schedule-2026-07/p5.jpg", "files/schedule-2026-07/p6.jpg"
+  ],
   /* 每日普通會診醫師(平日;假日改急會診由值班醫師負責)— 班表第2頁<會診> */
   consult: {
     1: "劉志翰", 2: "林均叡", 3: "蔡凱帆", 6: "周嘉安", 7: "劉庭均",

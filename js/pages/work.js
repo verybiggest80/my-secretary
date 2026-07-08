@@ -26,17 +26,29 @@ window.Pages.work = (function () {
     const SD = window.ScheduleData;
     if (!SD) return null;
     const now = new Date();
-    const ym = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-    if (SD.month !== ym) return null;
+    const ymOf = (dt) => dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
+    if (SD.month !== ymOf(now)) return null;
     const d = now.getDate();
     let consultNote = '';
     let consultName = SD.consult[d];
     if (!consultName) { consultName = SD.oncallB[d]; consultNote = '假日改急會診,由值班醫師負責'; }
     const inRange = (arr) => { const r = arr.find((r) => d >= r.from && d <= r.to); return r ? r.name : null; };
+
+    /* 值班以每日 07:30 交接:07:30 前仍顯示前一日的值班醫師 */
+    const shifted = new Date(now.getTime() - (7 * 60 + 30) * 60000);
+    let oncall, oncallNote = '';
+    if (ymOf(shifted) === SD.month) {
+      oncall = findDoc(SD.oncallB[shifted.getDate()]);
+      if (shifted.getDate() !== d) oncallNote = `${shifted.getMonth() + 1}/${shifted.getDate()} 值班・07:30 交接`;
+    } else {
+      oncall = findDoc(null);
+      oncallNote = '前月班表已過期';
+    }
+
     return {
       day: d,
       consult: findDoc(consultName), consultNote,
-      oncall: findDoc(SD.oncallB[d]),
+      oncall, oncallNote,
       icuMed: findDoc(inRange(SD.icuMed)),
       icuSurg: findDoc(inRange(SD.icuSurg))
     };
@@ -66,9 +78,9 @@ window.Pages.work = (function () {
       if (info) {
         tilesHtml = `
           ${docTile('w-consult', '🩺', '會診', info.consult, info.consultNote)}
-          ${docTile('w-oncall', '🌙', '值班', info.oncall)}
+          ${docTile('w-oncall', '🌙', '值班', info.oncall, info.oncallNote)}
           ${docTile('w-icu-med', '🫁', '內ICU', info.icuMed)}
-          ${docTile('w-icu-surg', '🔧', '外ICU', info.icuSurg)}`;
+          ${docTile('w-icu-surg', '😷', '外ICU', info.icuSurg)}`;
       } else {
         tilesHtml = `
           <div class="tile bar">
@@ -157,16 +169,18 @@ window.Pages.work = (function () {
     const SD = window.ScheduleData;
     const cloud = document.createElement('div');
     cloud.className = 'work-card';
-    cloud.innerHTML = `<h2>☁️ 雲端班表</h2>` + ((SD && SD.pdf) ? `
+    cloud.innerHTML = `<h2>☁️ 雲端班表</h2>` + ((SD && (SD.pages || SD.pdf)) ? `
       <div class="schedule-current">
         <span class="file-icon">📄</span>
         <div class="schedule-meta">
           <div class="fname">${esc(SD.pdfLabel || SD.month + ' 班表')}</div>
           <div class="fdate">${esc(SD.month)}・所有裝置皆可開啟</div>
         </div>
-        <a href="${esc(SD.pdf)}" target="_blank" rel="noopener" style="border:none;background:var(--accent);color:#fff;padding:8px 14px;border-radius:10px;font-weight:600;text-decoration:none">開啟</a>
+        <button id="cloud-open" style="border:none;background:var(--accent);color:#fff;padding:8px 14px;border-radius:10px;font-weight:600">開啟</button>
       </div>` : '<div class="empty-hint" style="padding:12px 0">尚無雲端班表</div>');
     root.appendChild(cloud);
+    const openBtn = cloud.querySelector('#cloud-open');
+    if (openBtn) openBtn.addEventListener('click', renderCloudViewer);
 
     const card = document.createElement('div');
     card.className = 'work-card';
@@ -232,6 +246,27 @@ window.Pages.work = (function () {
     });
 
     refresh();
+  }
+
+  /* ---------- 雲端班表閱覽器(App 內開啟,含返回鍵) ---------- */
+  function renderCloudViewer() {
+    const SD = window.ScheduleData;
+    root.innerHTML = '';
+
+    const back = document.createElement('div');
+    back.className = 'back-row';
+    back.innerHTML = `<button class="back-btn">← 班表</button>`;
+    back.querySelector('button').addEventListener('click', renderSchedule);
+    root.appendChild(back);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'pdf-pages';
+    const pages = (SD && SD.pages) || [];
+    wrap.innerHTML =
+      pages.map((p, i) => `<img src="${esc(p)}" alt="班表第${i + 1}頁" loading="lazy">`).join('') +
+      (SD && SD.pdf ? `<a class="btn-secondary" style="display:block;text-align:center;text-decoration:none" href="${esc(SD.pdf)}" target="_blank" rel="noopener">下載 PDF 原檔</a>` : '');
+    root.appendChild(wrap);
+    window.scrollTo(0, 0);
   }
 
   /* ---------- CRRT:FF 計算器 ---------- */

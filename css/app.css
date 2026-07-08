@@ -214,3 +214,9 @@ body {
 .dir-name { flex: 1; font-weight: 600; }
 .dir-code { color: var(--accent); font-weight: 600; min-width: 56px; text-align: right; }
 .dir-phone { color: var(--text-2); min-width: 64px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ===== 雲端班表閱覽器 ===== */
+.pdf-pages img {
+  width: 100%; display: block; margin-bottom: 12px;
+  border-radius: 10px; background: #fff; border: 1px solid var(--border);
+}
