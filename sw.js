@@ -38,4 +38,26 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
       fetch(e.request)
         .then((res) => {
-          const clon
+          const clone = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, clone));
+          return res;
+        })
+        .catch(() => caches.match(e.request).then((hit) => hit || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  /* 其他資源:快取優先,同時背景更新快取(stale-while-revalidate) */
+  e.respondWith(
+    caches.match(e.request).then((hit) => {
+      const refresh = fetch(e.request).then((res) => {
+        if (res.ok && sameOrigin) {
+          const clone = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, clone));
+        }
+        return res;
+      }).catch(() => hit);
+      return hit || refresh;
+    })
+  );
+});
