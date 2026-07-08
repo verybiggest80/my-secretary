@@ -1,5 +1,5 @@
-/* Service Worker — app shell 採 cache-first,離線可用 */
-const VERSION = 'v1.1.0';
+/* Service Worker — 頁面採網路優先(確保拿到新版),資源採快取優先+背景更新 */
+const VERSION = 'v1.2.0';
 const CACHE = `secretary-${VERSION}`;
 const SHELL = [
   './',
@@ -31,11 +31,11 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then((hit) => hit || fetch(e.request).then((res) => {
-      // 動態快取同源資源
-      if (res.ok && new URL(e.request.url).origin === location.origin) {
-        const clone = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, clone));
-      }
-      re
+  const sameOrigin = new URL(e.request.url).origin === location.origin;
+
+  /* 頁面導覽:網路優先,離線才用快取 → 每次開啟都拿最新版 */
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request)
+        .then((res) => {
+          const clon
