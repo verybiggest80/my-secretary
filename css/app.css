@@ -117,6 +117,25 @@ body {
   padding: 0 18px; border: none; border-radius: 12px;
   background: var(--accent); color: #fff; font-size: 1.3rem; font-weight: 600;
 }
+#todo-mic {
+  background: var(--accent-soft); color: var(--accent); font-size: 1.15rem; padding: 0 14px;
+}
+#todo-mic.recording {
+  background: var(--danger); color: #fff; animation: recpulse 1.2s infinite;
+}
+@keyframes recpulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
+.rec-banner {
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  color: var(--danger); font-size: .88rem; font-weight: 600;
+  padding: 8px; margin-bottom: 12px; border-radius: 12px;
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+.todo-play {
+  border: none; background: var(--accent-soft); color: var(--accent);
+  width: 34px; height: 34px; min-width: 34px; border-radius: 50%; font-size: .9rem;
+}
+.todo-play.playing { background: var(--accent); color: #fff; }
+.audio-tag { font-size: .75rem; color: var(--text-2); white-space: nowrap; }
 .segmented {
   display: flex; background: var(--card); border-radius: 12px; padding: 3px;
   border: 1px solid var(--border); margin-bottom: 14px;

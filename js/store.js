@@ -44,6 +44,15 @@
         tx.onerror = () => reject(tx.error);
       });
     },
+    async get(id) {
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(FILES, 'readonly');
+        const req = tx.objectStore(FILES).get(id);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    },
     async listMeta(category) {
       const db = await openDB();
       return new Promise((resolve, reject) => {
