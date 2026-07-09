@@ -8,6 +8,25 @@ window.Pages.home = (function () {
     { id: 'cover', size: 'bar' }
   ];
 
+  /* 名字是否出現在本月班表任何名單中(通訊錄/Cover/值班/會診) */
+  function nameInRoster(q) {
+    const SD = window.ScheduleData;
+    if (!SD) return false;
+    const clean = (s) => String(s).replace(/[((].*?[))]/g, '').trim();
+    const names = new Set();
+    (SD.directory || []).forEach((d) => names.add(d.name));
+    Object.values(SD.cover || {}).forEach((arr) => arr.forEach((p) => {
+      names.add(clean(p.by));
+      names.add(clean(p.off));
+    }));
+    Object.values(SD.oncallB || {}).forEach((n) => names.add(n));
+    Object.values(SD.consult || {}).forEach((n) => names.add(n));
+    for (const n of names) {
+      if (n && (n.includes(q) || q.includes(n))) return true;
+    }
+    return false;
+  }
+
   /* 班表資料延遲載入(Cover 卡片需要) */
   function ensureData(cb) {
     if (window.ScheduleData) return cb();
@@ -57,9 +76,11 @@ window.Pages.home = (function () {
       };
     },
     cover() {
-      const name = (ls.get('userName', '') || '').trim();
+      const nick = (ls.get('userName', '') || '').trim();
+      const real = (ls.get('realName', '') || '').trim();
+      const q = real || nick; // 查 Cover 優先用真實姓名
       let body;
-      if (!name) {
+      if (!q) {
         body = `<div class="cover-msg" style="color:var(--text-2)">請按右上角齒輪圖案設置姓名以開啟貼心功能</div>`;
       } else {
         const SD = window.ScheduleData;
@@ -67,9 +88,12 @@ window.Pages.home = (function () {
         const ym = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
         if (!SD || SD.month !== ym) {
           body = `<div class="cover-msg" style="color:var(--text-2)">班表尚未更新,無法查詢 Cover</div>`;
+        } else if (!nameInRoster(q)) {
+          /* 名字在整份班表中查不到(綽號/英文)→ 引導設置真實姓名 */
+          body = `<div class="cover-msg" style="color:var(--text-2)">請按右上角齒輪設置真實姓名</div>`;
         } else {
           const pairs = (SD.cover && SD.cover[now.getDate()]) || [];
-          const mine = pairs.filter((p) => p.by.includes(name) || name.includes(p.by));
+          const mine = pairs.filter((p) => p.by.includes(q) || q.includes(p.by));
           body = mine.length
             ? `<div class="cover-msg">你今天要Cover${mine.map((m) => esc(m.off)).join('、')}喔! 辛苦了!</div>`
             : `<div class="cover-msg">今天不用Cover別人，舒服!</div>`;
@@ -131,8 +155,12 @@ window.Pages.home = (function () {
       <div class="work-card">
         <h2>⚙️ 設置</h2>
         <div class="field">
-          <label for="set-name">你的名字(顯示在首頁問候語)</label>
+          <label for="set-name">你的稱呼(顯示在首頁問候語)</label>
           <input id="set-name" type="text" value="${esc(ls.get('userName', ''))}" placeholder="例:Jeffrey" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="set-realname">真實姓名(用於查詢班表 Cover)</label>
+          <input id="set-realname" type="text" value="${esc(ls.get('realName', ''))}" placeholder="例:許瑞廷" autocomplete="off">
         </div>
         <button id="set-save" class="btn-primary">儲存</button>
         <button id="set-back" class="btn-secondary">返回</button>
@@ -145,6 +173,7 @@ window.Pages.home = (function () {
     };
     root.querySelector('#set-save').addEventListener('click', () => {
       ls.set('userName', root.querySelector('#set-name').value.trim());
+      ls.set('realName', root.querySelector('#set-realname').value.trim());
       done();
     });
     root.querySelector('#set-back').addEventListener('click', done);
