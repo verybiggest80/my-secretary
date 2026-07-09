@@ -139,6 +139,11 @@ body {
 
 /* ===== Cover 卡片 ===== */
 .cover-msg { font-size: 1.02rem; font-weight: 600; line-height: 1.5; margin-top: 6px; }
+.cover-btn {
+  align-self: flex-start; margin-top: 10px;
+  border: none; background: var(--accent-soft); color: var(--accent);
+  font-size: .85rem; font-weight: 600; padding: 7px 14px; border-radius: 18px;
+}
 .segmented {
   display: flex; background: var(--card); border-radius: 12px; padding: 3px;
   border: 1px solid var(--border); margin-bottom: 14px;

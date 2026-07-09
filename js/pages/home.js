@@ -39,6 +39,7 @@ window.Pages.home = (function () {
 
   let root, nav, headerBtn, gearBtn, titleEl;
   let editing = false;
+  let coverShowTomorrow = false; // Cover 卡片:false=今天, true=明天
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -79,27 +80,31 @@ window.Pages.home = (function () {
       const nick = (ls.get('userName', '') || '').trim();
       const real = (ls.get('realName', '') || '').trim();
       const q = real || nick; // 查 Cover 優先用真實姓名
+      const tm = coverShowTomorrow;
+      const word = tm ? '明天' : '今天';
       let body;
       if (!q) {
         body = `<div class="cover-msg" style="color:var(--text-2)">請按右上角齒輪圖案設置姓名以開啟貼心功能</div>`;
       } else {
         const SD = window.ScheduleData;
-        const now = new Date();
-        const ym = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        const target = new Date();
+        if (tm) target.setDate(target.getDate() + 1);
+        const ym = target.getFullYear() + '-' + String(target.getMonth() + 1).padStart(2, '0');
         if (!SD || SD.month !== ym) {
-          body = `<div class="cover-msg" style="color:var(--text-2)">班表尚未更新,無法查詢 Cover</div>`;
+          body = `<div class="cover-msg" style="color:var(--text-2)">${tm ? '明天已是下個月,' : ''}班表尚未更新,無法查詢 Cover</div>`;
         } else if (!nameInRoster(q)) {
           /* 名字在整份班表中查不到(綽號/英文)→ 引導設置真實姓名 */
           body = `<div class="cover-msg" style="color:var(--text-2)">請按右上角齒輪設置真實姓名</div>`;
         } else {
-          const pairs = (SD.cover && SD.cover[now.getDate()]) || [];
+          const pairs = (SD.cover && SD.cover[target.getDate()]) || [];
           const mine = pairs.filter((p) => p.by.includes(q) || q.includes(p.by));
           body = mine.length
-            ? `<div class="cover-msg">你今天要Cover${mine.map((m) => esc(m.off)).join('、')}喔! 辛苦了!</div>`
-            : `<div class="cover-msg">今天不用Cover別人，舒服!</div>`;
+            ? `<div class="cover-msg">你${word}要Cover${mine.map((m) => esc(m.off)).join('、')}喔! 辛苦了!</div>`
+            : `<div class="cover-msg">${word}不用Cover別人，舒服!</div>`;
         }
       }
-      return { title: '🤝 Cover', body, onTap: null };
+      if (q) body += `<button id="cover-toggle" class="cover-btn">${tm ? '回到今天' : '看看明天'}</button>`;
+      return { title: `🤝 Cover${tm ? '(明天)' : ''}`, body, onTap: null };
     }
   };
 
@@ -146,6 +151,14 @@ window.Pages.home = (function () {
       }
       grid.appendChild(el);
     });
+
+    /* Cover 卡片:今天/明天切換 */
+    const ct = root.querySelector('#cover-toggle');
+    if (ct) ct.addEventListener('click', (e) => {
+      e.stopPropagation();
+      coverShowTomorrow = !coverShowTomorrow;
+      render();
+    });
   }
 
   /* 設置頁:設定名字 */
@@ -189,6 +202,7 @@ window.Pages.home = (function () {
 
   function show() {
     editing = false;
+    coverShowTomorrow = false;
     titleEl.textContent = greeting();
 
     headerBtn.textContent = '編輯';
