@@ -1,5 +1,5 @@
 /* Service Worker — 頁面採網路優先(確保拿到新版),資源採快取優先+背景更新 */
-const VERSION = 'v1.10.0';
+const VERSION = 'v1.11.0';
 const CACHE = `secretary-${VERSION}`;
 const SHELL = [
   './',

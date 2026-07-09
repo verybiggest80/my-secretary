@@ -136,6 +136,9 @@ body {
 }
 .todo-play.playing { background: var(--accent); color: #fff; }
 .audio-tag { font-size: .75rem; color: var(--text-2); white-space: nowrap; }
+
+/* ===== Cover 卡片 ===== */
+.cover-msg { font-size: 1.02rem; font-weight: 600; line-height: 1.5; margin-top: 6px; }
 .segmented {
   display: flex; background: var(--card); border-radius: 12px; padding: 3px;
   border: 1px solid var(--border); margin-bottom: 14px;

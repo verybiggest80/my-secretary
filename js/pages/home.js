@@ -5,8 +5,18 @@ window.Pages.home = (function () {
   const DEFAULT_TILES = [
     { id: 'date', size: 'bar' },
     { id: 'todo', size: 'bar' },
-    { id: 'schedule', size: 'square' }
+    { id: 'cover', size: 'bar' }
   ];
+
+  /* 班表資料延遲載入(Cover 卡片需要) */
+  function ensureData(cb) {
+    if (window.ScheduleData) return cb();
+    const s = document.createElement('script');
+    s.src = 'js/schedule-data.js';
+    s.onload = cb;
+    s.onerror = cb;
+    document.head.appendChild(s);
+  }
 
   let root, nav, headerBtn, gearBtn, titleEl;
   let editing = false;
@@ -46,19 +56,33 @@ window.Pages.home = (function () {
         onTap: () => nav('todo')
       };
     },
-    schedule() {
-      return {
-        title: '📅 班表',
-        body: `<div class="tile-icon" style="font-size:2.2rem">📅</div>
-               <div class="tile-sub">查看/上傳本月班表</div>`,
-        onTap: () => nav('work', 'schedule')
-      };
+    cover() {
+      const name = (ls.get('userName', '') || '').trim();
+      let body;
+      if (!name) {
+        body = `<div class="cover-msg" style="color:var(--text-2)">請按右上角齒輪圖案設置姓名以開啟貼心功能</div>`;
+      } else {
+        const SD = window.ScheduleData;
+        const now = new Date();
+        const ym = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        if (!SD || SD.month !== ym) {
+          body = `<div class="cover-msg" style="color:var(--text-2)">班表尚未更新,無法查詢 Cover</div>`;
+        } else {
+          const pairs = (SD.cover && SD.cover[now.getDate()]) || [];
+          const mine = pairs.filter((p) => p.by.includes(name) || name.includes(p.by));
+          body = mine.length
+            ? `<div class="cover-msg">你今天要Cover${mine.map((m) => esc(m.off)).join('、')}喔! 辛苦了!</div>`
+            : `<div class="cover-msg">今天不用Cover別人，舒服!</div>`;
+        }
+      }
+      return { title: '🤝 Cover', body, onTap: null };
     }
   };
 
-  /* 讀取方塊設定;過濾已移除的方塊(如舊版的 CRRT) */
+  /* 讀取方塊設定;過濾已移除的方塊(如舊版的 CRRT/班表),補上新的 Cover 卡片 */
   function tiles() {
     const t = ls.get('tiles', DEFAULT_TILES).filter((x) => RENDERERS[x.id]);
+    if (!t.some((x) => x.id === 'cover')) t.push({ id: 'cover', size: 'bar' });
     return t.length ? t : DEFAULT_TILES;
   }
   function saveTiles(t) { ls.set('tiles', t); }
@@ -149,7 +173,7 @@ window.Pages.home = (function () {
     gearBtn.classList.remove('hidden');
     gearBtn.onclick = renderSettings;
 
-    render();
+    ensureData(render);
   }
 
   return { init, show };
