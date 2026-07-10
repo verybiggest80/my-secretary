@@ -259,6 +259,34 @@ body {
   font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
+/* ===== 電解質互動診斷流程 ===== */
+.dx-tile h3 { font-size: .9rem; }
+.dx-subtitle { color: var(--text-2); font-size: .82rem; margin: -4px 0 14px; }
+.dx-step {
+  display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .04em;
+  color: var(--accent); background: var(--accent-soft);
+  padding: 3px 9px; border-radius: 10px; margin-bottom: 8px;
+}
+.dx-q { font-size: 1.05rem; font-weight: 600; line-height: 1.45; }
+.dx-note { font-size: .8rem; color: var(--text-2); margin-top: 6px; line-height: 1.5; }
+.dx-options { display: flex; flex-direction: column; gap: 9px; margin-top: 14px; }
+.dx-opt {
+  text-align: left; border: 1px solid var(--accent); background: var(--card);
+  color: var(--text); font-size: .95rem; font-weight: 500;
+  padding: 13px 15px; border-radius: 12px; line-height: 1.4;
+}
+.dx-opt:active { background: var(--accent-soft); }
+.dx-result {
+  margin-top: 6px; padding: 14px; border-radius: 12px;
+  background: var(--accent-soft); border: 1px solid var(--accent);
+}
+.dx-dx { font-size: 1.05rem; font-weight: 700; color: var(--accent); line-height: 1.4; }
+.dx-detail { font-size: .85rem; color: var(--text); margin-top: 7px; line-height: 1.5; }
+.dx-tests { margin: 10px 0 0; padding-left: 18px; }
+.dx-tests li { font-size: .86rem; line-height: 1.55; margin-bottom: 5px; }
+.dx-nav { display: flex; gap: 8px; margin-top: 16px; }
+.dx-nav .btn-secondary { margin-top: 0; }
+
 /* ===== 雲端班表閱覽器 ===== */
 .pdf-pages img {
   width: 100%; display: block; margin-bottom: 12px;

@@ -350,10 +350,96 @@ window.Pages.work = (function () {
         <h3>📋 會診工具</h3>
         <div class="tile-icon" style="font-size:2rem">📋</div>
         <div class="tile-sub">會診範本・建議回覆</div>
+      </div>
+      <div class="tile square dx-tile" id="dx-hypoNa">
+        <h3>🧭 Hyponatremia</h3>
+        <div class="tile-sub">Interactive work-up</div>
+      </div>
+      <div class="tile square dx-tile" id="dx-hyperNa">
+        <h3>🧭 Hypernatremia</h3>
+        <div class="tile-sub">Interactive work-up</div>
+      </div>
+      <div class="tile square dx-tile" id="dx-hyperCa">
+        <h3>🧭 Hypercalcemia</h3>
+        <div class="tile-sub">Interactive work-up</div>
+      </div>
+      <div class="tile square dx-tile" id="dx-hypoCa">
+        <h3>🧭 Hypocalcemia</h3>
+        <div class="tile-sub">Interactive work-up</div>
       </div>`;
     root.appendChild(grid);
     grid.querySelector('#h-ff').addEventListener('click', renderCRRT);
     grid.querySelector('#h-consult').addEventListener('click', renderConsultList);
+    ['hypoNa', 'hyperNa', 'hyperCa', 'hypoCa'].forEach((k) =>
+      grid.querySelector('#dx-' + k).addEventListener('click', () => renderDx(k)));
+  }
+
+  /* ---------- 電解質互動診斷流程 ---------- */
+  function ensureDxData(cb) {
+    if (window.DxData) return cb();
+    const s = document.createElement('script');
+    s.src = 'js/dx-data.js';
+    s.onload = cb;
+    s.onerror = cb;
+    document.head.appendChild(s);
+  }
+
+  function renderDx(key) {
+    ensureDxData(() => {
+      const tree = window.DxData && window.DxData[key];
+      if (!tree) return renderHelper();
+      const stack = [tree.root]; // node history for in-flow back
+
+      function draw() {
+        const nodeId = stack[stack.length - 1];
+        const node = tree.nodes[nodeId];
+        root.innerHTML = '';
+        root.appendChild(backRowTo('← 臨床幫手', renderHelper));
+
+        const card = document.createElement('div');
+        card.className = 'work-card dx-card';
+        let html = `<h2>${esc(tree.title)}</h2><div class="dx-subtitle">${esc(tree.subtitle)}</div>`;
+
+        if (node.q) {
+          if (node.step) html += `<div class="dx-step">${esc(node.step)}</div>`;
+          html += `<div class="dx-q">${esc(node.q)}</div>`;
+          if (node.note) html += `<div class="dx-note">${esc(node.note)}</div>`;
+          html += `<div class="dx-options">` +
+            node.options.map((o, i) => `<button class="dx-opt" data-i="${i}">${esc(o.label)}</button>`).join('') +
+            `</div>`;
+        }
+        if (node.dx) {
+          html += `<div class="dx-result">
+            <div class="dx-dx">🎯 ${esc(node.dx)}</div>
+            ${node.detail ? `<div class="dx-detail">${esc(node.detail)}</div>` : ''}
+            <ul class="dx-tests">${(node.tests || []).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+          </div>`;
+          if (node.options) {
+            html += `<div class="dx-options">` +
+              node.options.map((o, i) => `<button class="dx-opt" data-i="${i}">${esc(o.label)}</button>`).join('') +
+              `</div>`;
+          }
+        }
+
+        html += `<div class="dx-nav">
+          ${stack.length > 1 ? `<button class="btn-secondary" id="dx-back">↩ 上一步</button>` : ''}
+          <button class="btn-secondary" id="dx-restart">↺ 重新開始</button>
+        </div>`;
+        card.innerHTML = html;
+        root.appendChild(card);
+
+        card.querySelectorAll('.dx-opt').forEach((b) =>
+          b.addEventListener('click', () => {
+            const opt = node.options[Number(b.dataset.i)];
+            if (opt && opt.next) { stack.push(opt.next); draw(); }
+          }));
+        const back = card.querySelector('#dx-back');
+        if (back) back.addEventListener('click', () => { stack.pop(); draw(); });
+        card.querySelector('#dx-restart').addEventListener('click', () => { stack.length = 1; draw(); });
+        window.scrollTo(0, 0);
+      }
+      draw();
+    });
   }
 
   /* ---------- 會診工具:資料延遲載入 ---------- */
