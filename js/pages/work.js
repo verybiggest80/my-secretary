@@ -351,6 +351,11 @@ window.Pages.work = (function () {
         <div class="tile-icon" style="font-size:2rem">📋</div>
         <div class="tile-sub">會診範本・建議回覆</div>
       </div>
+      <div class="tile square" id="h-plasma">
+        <h3>💉 Plasma計算器</h3>
+        <div class="tile-icon" style="font-size:2rem">💉</div>
+        <div class="tile-sub">PE・DFPP volume</div>
+      </div>
       <div class="tile square dx-tile" id="dx-hypoNa">
         <h3>🧭 Hyponatremia</h3>
         <div class="tile-sub">Interactive work-up</div>
@@ -370,8 +375,103 @@ window.Pages.work = (function () {
     root.appendChild(grid);
     grid.querySelector('#h-ff').addEventListener('click', renderCRRT);
     grid.querySelector('#h-consult').addEventListener('click', renderConsultList);
+    grid.querySelector('#h-plasma').addEventListener('click', renderPlasmaMenu);
     ['hypoNa', 'hyperNa', 'hyperCa', 'hypoCa'].forEach((k) =>
       grid.querySelector('#dx-' + k).addEventListener('click', () => renderDx(k)));
+  }
+
+  /* ---------- Plasma 計算器(子選單) ---------- */
+  function renderPlasmaMenu() {
+    root.innerHTML = '';
+    root.appendChild(backRowTo('← 臨床幫手', renderHelper));
+    const grid = document.createElement('div');
+    grid.className = 'tile-grid';
+    grid.innerHTML = `
+      <div class="tile square" id="p-pe">
+        <h3>💉 Plasma Exchange</h3>
+        <div class="tile-sub">Volume + FFP (U)</div>
+      </div>
+      <div class="tile square" id="p-dfpp">
+        <h3>💉 DFPP</h3>
+        <div class="tile-sub">Volume (L)</div>
+      </div>`;
+    root.appendChild(grid);
+    grid.querySelector('#p-pe').addEventListener('click', () => renderPlasma('PE'));
+    grid.querySelector('#p-dfpp').addEventListener('click', () => renderPlasma('DFPP'));
+  }
+
+  /* PE 與 DFPP 共用:V = (M 0.07 / F 0.065) × BW × (1−Hct);序列 V,V,V×1.3,V×1.3,V×1.5 */
+  function renderPlasma(mode) {
+    const isPE = mode === 'PE';
+    const saved = ls.get(isPE ? 'peInputs' : 'dfppInputs', {});
+    root.innerHTML = '';
+    root.appendChild(backRowTo('← Plasma計算器', renderPlasmaMenu));
+
+    const card = document.createElement('div');
+    card.className = 'work-card';
+    const sex = saved.sex || 'M';
+    card.innerHTML = `
+      <h2>💉 ${isPE ? 'Plasma Exchange' : 'DFPP'}</h2>
+      <div class="field">
+        <label>Sex</label>
+        <div class="segmented" id="pl-sex">
+          <button data-s="M" class="${sex === 'M' ? 'active' : ''}">M(0.07)</button>
+          <button data-s="F" class="${sex === 'F' ? 'active' : ''}">F(0.065)</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="pl-bw">Body Weight (kg)</label>
+        <input id="pl-bw" type="number" inputmode="decimal" value="${saved.bw ?? ''}" placeholder="例:60">
+      </div>
+      <div class="field">
+        <label for="pl-hct">Hct (0–1)</label>
+        <input id="pl-hct" type="number" inputmode="decimal" step="0.01" min="0" max="1" value="${saved.hct ?? 0.4}">
+      </div>
+      <button id="pl-calc" class="btn-primary">Calculate Volume</button>
+      <div id="pl-out"></div>
+      <div class="formula-hint">
+        V = ${'{M 0.07 / F 0.065}'} × BW × (1 − Hct)<br>
+        Volume: V → V → V×1.3 → V×1.3 → V×1.5${isPE ? '<br>FFP (U) = Volume(L) × 8' : ''}
+      </div>`;
+    root.appendChild(card);
+
+    let curSex = sex;
+    card.querySelectorAll('#pl-sex button').forEach((b) =>
+      b.addEventListener('click', () => {
+        curSex = b.dataset.s;
+        card.querySelectorAll('#pl-sex button').forEach((x) => x.classList.toggle('active', x === b));
+      }));
+
+    card.querySelector('#pl-calc').addEventListener('click', () => {
+      const bw = parseFloat(card.querySelector('#pl-bw').value);
+      const hct = parseFloat(card.querySelector('#pl-hct').value);
+      const out = card.querySelector('#pl-out');
+      if (Number.isNaN(bw) || Number.isNaN(hct)) {
+        out.innerHTML = '<div class="ff-result warn"><div class="ff-note">請填寫 Body Weight 與 Hct</div></div>';
+        return;
+      }
+      if (hct <= 0 || hct >= 1) {
+        out.innerHTML = '<div class="ff-result warn"><div class="ff-note">Hct 需介於 0 與 1 之間(例:0.4)</div></div>';
+        return;
+      }
+      ls.set(isPE ? 'peInputs' : 'dfppInputs', { sex: curSex, bw, hct });
+
+      const coef = curSex === 'F' ? 0.065 : 0.07;
+      const V = coef * bw * (1 - hct);
+      const mult = [1, 1, 1.3, 1.3, 1.5];
+      const vols = mult.map((m) => V * m);
+      const fmt = (x) => x.toFixed(2);
+      const volArrow = vols.map(fmt).join(' → ');
+
+      let html = `<div class="ff-result" style="text-align:left">
+        <div class="pl-line"><span class="pl-label">Volume (L)</span><span class="pl-val">${volArrow}</span></div>`;
+      if (isPE) {
+        const ffpArrow = vols.map((v) => Math.round(v * 8)).join(' → ');
+        html += `<div class="pl-line"><span class="pl-label">FFP (U)</span><span class="pl-val">${ffpArrow}</span></div>`;
+      }
+      html += `<div class="ff-note" style="margin-top:8px">V = ${coef} × ${bw} × (1 − ${hct}) = ${fmt(V)} L${isPE ? ' ・ 1 U FFP ≈ 125 mL' : ''}</div></div>`;
+      out.innerHTML = html;
+    });
   }
 
   /* ---------- 電解質互動診斷流程 ---------- */

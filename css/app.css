@@ -287,6 +287,12 @@ body {
 .dx-nav { display: flex; gap: 8px; margin-top: 16px; }
 .dx-nav .btn-secondary { margin-top: 0; }
 
+/* ===== Plasma 計算器 ===== */
+.pl-line { display: flex; flex-direction: column; gap: 3px; padding: 6px 0; }
+.pl-line + .pl-line { border-top: 1px dashed var(--border); }
+.pl-label { font-size: .78rem; color: var(--text-2); font-weight: 600; }
+.pl-val { font-size: 1.15rem; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+
 /* ===== 雲端班表閱覽器 ===== */
 .pdf-pages img {
   width: 100%; display: block; margin-bottom: 12px;
