@@ -95,7 +95,7 @@ body {
 .tile h3 { font-size: .95rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
 .tile .tile-big { font-size: 1.9rem; font-weight: 700; color: var(--accent); }
 .tile .tile-sub { font-size: .78rem; color: var(--text-2); line-height: 1.5; }
-.tile .tile-icon { font-size: 1.5rem; }
+.tile .tile-icon { font-size: 2rem; line-height: 1.1; }
 
 /* 編輯模式 */
 .tile-grid.editing .tile { border: 1.5px dashed var(--accent); }

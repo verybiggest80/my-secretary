@@ -342,44 +342,48 @@ window.Pages.work = (function () {
     grid.className = 'tile-grid';
     grid.innerHTML = `
       <div class="tile square" id="h-ff">
-        <h3>🧮 FF計算器</h3>
-        <div class="tile-icon" style="font-size:2rem">🧮</div>
+        <h3>FF計算器</h3>
+        <div class="tile-icon">🧮</div>
         <div class="tile-sub">CRRT Filtration Fraction</div>
       </div>
       <div class="tile square" id="h-consult">
-        <h3>📋 會診工具</h3>
-        <div class="tile-icon" style="font-size:2rem">📋</div>
+        <h3>會診工具</h3>
+        <div class="tile-icon">📋</div>
         <div class="tile-sub">會診範本・建議回覆</div>
       </div>
       <div class="tile square" id="h-plasma">
-        <h3>💉 Plasma計算器</h3>
-        <div class="tile-icon" style="font-size:2rem">💉</div>
+        <h3>Plasma計算器</h3>
+        <div class="tile-icon">💉</div>
         <div class="tile-sub">PE・DFPP volume</div>
       </div>
       <div class="tile square" id="h-crcl">
-        <h3>🧪 24hr CrCl</h3>
-        <div class="tile-icon" style="font-size:2rem">🧪</div>
+        <h3>24hr CrCl</h3>
+        <div class="tile-icon">🧪</div>
         <div class="tile-sub">Creatinine clearance</div>
       </div>
       <div class="tile square" id="h-ibw">
-        <h3>⚖️ IBW / AdjBW</h3>
-        <div class="tile-icon" style="font-size:2rem">⚖️</div>
+        <h3>IBW / AdjBW</h3>
+        <div class="tile-icon">⚖️</div>
         <div class="tile-sub">Ideal・Adjusted BW</div>
       </div>
       <div class="tile square dx-tile" id="dx-hypoNa">
-        <h3>🧭 Hyponatremia</h3>
+        <h3>Hyponatremia</h3>
+        <div class="tile-icon">🧭</div>
         <div class="tile-sub">Interactive work-up</div>
       </div>
       <div class="tile square dx-tile" id="dx-hyperNa">
-        <h3>🧭 Hypernatremia</h3>
+        <h3>Hypernatremia</h3>
+        <div class="tile-icon">🧭</div>
         <div class="tile-sub">Interactive work-up</div>
       </div>
       <div class="tile square dx-tile" id="dx-hyperCa">
-        <h3>🧭 Hypercalcemia</h3>
+        <h3>Hypercalcemia</h3>
+        <div class="tile-icon">🧭</div>
         <div class="tile-sub">Interactive work-up</div>
       </div>
       <div class="tile square dx-tile" id="dx-hypoCa">
-        <h3>🧭 Hypocalcemia</h3>
+        <h3>Hypocalcemia</h3>
+        <div class="tile-icon">🧭</div>
         <div class="tile-sub">Interactive work-up</div>
       </div>`;
     root.appendChild(grid);
@@ -552,11 +556,13 @@ window.Pages.work = (function () {
     grid.className = 'tile-grid';
     grid.innerHTML = `
       <div class="tile square" id="p-pe">
-        <h3>💉 Plasma Exchange</h3>
+        <h3>Plasma Exchange</h3>
+        <div class="tile-icon">💉</div>
         <div class="tile-sub">Volume + FFP (U)</div>
       </div>
       <div class="tile square" id="p-dfpp">
-        <h3>💉 DFPP</h3>
+        <h3>DFPP</h3>
+        <div class="tile-icon">💉</div>
         <div class="tile-sub">Volume (L)</div>
       </div>`;
     root.appendChild(grid);
