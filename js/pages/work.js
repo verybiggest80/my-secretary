@@ -356,6 +356,16 @@ window.Pages.work = (function () {
         <div class="tile-icon" style="font-size:2rem">💉</div>
         <div class="tile-sub">PE・DFPP volume</div>
       </div>
+      <div class="tile square" id="h-crcl">
+        <h3>🧪 24hr CrCl</h3>
+        <div class="tile-icon" style="font-size:2rem">🧪</div>
+        <div class="tile-sub">Creatinine clearance</div>
+      </div>
+      <div class="tile square" id="h-ibw">
+        <h3>⚖️ IBW / AdjBW</h3>
+        <div class="tile-icon" style="font-size:2rem">⚖️</div>
+        <div class="tile-sub">Ideal・Adjusted BW</div>
+      </div>
       <div class="tile square dx-tile" id="dx-hypoNa">
         <h3>🧭 Hyponatremia</h3>
         <div class="tile-sub">Interactive work-up</div>
@@ -376,8 +386,162 @@ window.Pages.work = (function () {
     grid.querySelector('#h-ff').addEventListener('click', renderCRRT);
     grid.querySelector('#h-consult').addEventListener('click', renderConsultList);
     grid.querySelector('#h-plasma').addEventListener('click', renderPlasmaMenu);
+    grid.querySelector('#h-crcl').addEventListener('click', renderCrCl);
+    grid.querySelector('#h-ibw').addEventListener('click', renderIBW);
     ['hypoNa', 'hyperNa', 'hyperCa', 'hypoCa'].forEach((k) =>
       grid.querySelector('#dx-' + k).addEventListener('click', () => renderDx(k)));
+  }
+
+  /* ---------- 24hr Creatinine Clearance ---------- */
+  function renderCrCl() {
+    const saved = ls.get('crclInputs', {});
+    root.innerHTML = '';
+    root.appendChild(backRowTo('← 臨床幫手', renderHelper));
+
+    const card = document.createElement('div');
+    card.className = 'work-card';
+    card.innerHTML = `
+      <h2>🧪 24hr Creatinine Clearance</h2>
+      <div class="field">
+        <label for="cc-ucr">Urine creatinine (mg/dL)</label>
+        <input id="cc-ucr" type="number" inputmode="decimal" value="${saved.ucr ?? ''}" placeholder="例:60">
+      </div>
+      <div class="field">
+        <label for="cc-vol">24hr urine volume (mL)</label>
+        <input id="cc-vol" type="number" inputmode="decimal" value="${saved.vol ?? ''}" placeholder="例:1500">
+      </div>
+      <div class="field">
+        <label for="cc-scr">Serum creatinine (mg/dL)</label>
+        <input id="cc-scr" type="number" inputmode="decimal" step="0.01" value="${saved.scr ?? ''}" placeholder="例:1.2">
+      </div>
+      <div class="section-label">BSA 校正(選填)</div>
+      <div class="field">
+        <label for="cc-ht">Height (cm)</label>
+        <input id="cc-ht" type="number" inputmode="decimal" value="${saved.ht ?? ''}" placeholder="例:165">
+      </div>
+      <div class="field">
+        <label for="cc-bw">Body weight (kg)</label>
+        <input id="cc-bw" type="number" inputmode="decimal" value="${saved.bw ?? ''}" placeholder="例:60">
+      </div>
+      <button id="cc-calc" class="btn-primary">Calculate CrCl</button>
+      <div id="cc-out"></div>
+      <div class="formula-hint">
+        CrCl (mL/min) = U<sub>Cr</sub> × V ÷ (S<sub>Cr</sub> × 1440)<br>
+        BSA (DuBois) = 0.007184 × Ht<sup>0.725</sup> × Wt<sup>0.425</sup>;校正值 = CrCl × 1.73 ÷ BSA<br>
+        24 小時尿量與尿肌酸酐須為同一次完整收集。
+      </div>`;
+    root.appendChild(card);
+
+    card.querySelector('#cc-calc').addEventListener('click', () => {
+      const v = (id) => parseFloat(card.querySelector('#' + id).value);
+      const ucr = v('cc-ucr'), vol = v('cc-vol'), scr = v('cc-scr');
+      const ht = v('cc-ht'), bw = v('cc-bw');
+      const out = card.querySelector('#cc-out');
+
+      if ([ucr, vol, scr].some((n) => Number.isNaN(n))) {
+        out.innerHTML = '<div class="ff-result warn"><div class="ff-note">請填寫 Urine creatinine、24hr urine volume 與 Serum creatinine</div></div>';
+        return;
+      }
+      if (scr <= 0 || ucr <= 0 || vol <= 0) {
+        out.innerHTML = '<div class="ff-result warn"><div class="ff-note">數值需大於 0</div></div>';
+        return;
+      }
+      ls.set('crclInputs', { ucr, vol, scr, ht: card.querySelector('#cc-ht').value, bw: card.querySelector('#cc-bw').value });
+
+      const crcl = (ucr * vol) / (scr * 1440);
+      let html = `<div class="ff-result" style="text-align:left">
+        <div class="pl-line"><span class="pl-label">Creatinine clearance</span><span class="pl-val">${crcl.toFixed(1)} mL/min</span></div>`;
+
+      if (!Number.isNaN(ht) && !Number.isNaN(bw) && ht > 0 && bw > 0) {
+        const bsa = 0.007184 * Math.pow(ht, 0.725) * Math.pow(bw, 0.425);
+        const norm = crcl * 1.73 / bsa;
+        html += `<div class="pl-line"><span class="pl-label">BSA-corrected (/1.73 m²)</span><span class="pl-val">${norm.toFixed(1)} mL/min/1.73m²</span></div>
+          <div class="ff-note" style="margin-top:8px">BSA = ${bsa.toFixed(2)} m²</div>`;
+      }
+
+      /* 收集完整性參考:24hr 尿肌酸酐排泄量 */
+      const excr = ucr * vol / 100; // mg/day
+      html += `<div class="ff-note" style="margin-top:8px">
+        24hr urine creatinine excretion = ${Math.round(excr)} mg/day${(!Number.isNaN(bw) && bw > 0) ? ` (${(excr / bw).toFixed(1)} mg/kg/day)` : ''}<br>
+        參考值:男 20–25、女 15–20 mg/kg/day;偏離過多提示收集不完整。
+      </div></div>`;
+      out.innerHTML = html;
+    });
+  }
+
+  /* ---------- Ideal / Adjusted Body Weight ---------- */
+  function renderIBW() {
+    const saved = ls.get('ibwInputs', {});
+    const sex = saved.sex || 'M';
+    root.innerHTML = '';
+    root.appendChild(backRowTo('← 臨床幫手', renderHelper));
+
+    const card = document.createElement('div');
+    card.className = 'work-card';
+    card.innerHTML = `
+      <h2>⚖️ Ideal / Adjusted Body Weight</h2>
+      <div class="field">
+        <label>Sex</label>
+        <div class="segmented" id="ib-sex">
+          <button data-s="M" class="${sex === 'M' ? 'active' : ''}">M</button>
+          <button data-s="F" class="${sex === 'F' ? 'active' : ''}">F</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="ib-ht">Height (cm)</label>
+        <input id="ib-ht" type="number" inputmode="decimal" value="${saved.ht ?? ''}" placeholder="例:165">
+      </div>
+      <div class="field">
+        <label for="ib-bw">Actual body weight (kg)</label>
+        <input id="ib-bw" type="number" inputmode="decimal" value="${saved.bw ?? ''}" placeholder="例:80">
+      </div>
+      <button id="ib-calc" class="btn-primary">Calculate</button>
+      <div id="ib-out"></div>
+      <div class="formula-hint">
+        IBW (Devine):男 50 + 2.3 × (身高吋 − 60);女 45.5 + 2.3 × (身高吋 − 60)<br>
+        AdjBW = IBW + 0.4 × (實際體重 − IBW)<br>
+        一般在實際體重 > 120–130% IBW(肥胖)時,藥物劑量才改用 AdjBW。
+      </div>`;
+    root.appendChild(card);
+
+    let curSex = sex;
+    card.querySelectorAll('#ib-sex button').forEach((b) =>
+      b.addEventListener('click', () => {
+        curSex = b.dataset.s;
+        card.querySelectorAll('#ib-sex button').forEach((x) => x.classList.toggle('active', x === b));
+      }));
+
+    card.querySelector('#ib-calc').addEventListener('click', () => {
+      const ht = parseFloat(card.querySelector('#ib-ht').value);
+      const bw = parseFloat(card.querySelector('#ib-bw').value);
+      const out = card.querySelector('#ib-out');
+      if (Number.isNaN(ht) || ht <= 0) {
+        out.innerHTML = '<div class="ff-result warn"><div class="ff-note">請填寫 Height</div></div>';
+        return;
+      }
+      ls.set('ibwInputs', { sex: curSex, ht, bw: card.querySelector('#ib-bw').value });
+
+      const inches = ht / 2.54;
+      const base = curSex === 'F' ? 45.5 : 50;
+      const ibw = base + 2.3 * (inches - 60);
+      let html = `<div class="ff-result" style="text-align:left">
+        <div class="pl-line"><span class="pl-label">Ideal body weight (IBW)</span><span class="pl-val">${ibw.toFixed(1)} kg</span></div>`;
+
+      if (!Number.isNaN(bw) && bw > 0) {
+        const adj = ibw + 0.4 * (bw - ibw);
+        const pct = bw / ibw * 100;
+        const bmi = bw / Math.pow(ht / 100, 2);
+        html += `<div class="pl-line"><span class="pl-label">Adjusted body weight (AdjBW)</span><span class="pl-val">${adj.toFixed(1)} kg</span></div>
+          <div class="ff-note" style="margin-top:8px">
+            實際體重為 IBW 的 ${pct.toFixed(0)}%・BMI ${bmi.toFixed(1)} kg/m²<br>
+            ${pct > 120 ? '⚠️ > 120% IBW,藥物劑量多建議採用 AdjBW' : '✓ ≤ 120% IBW,一般可直接使用實際體重或 IBW'}
+          </div>`;
+      } else {
+        html += `<div class="ff-note" style="margin-top:8px">填入實際體重可一併計算 AdjBW 與 BMI</div>`;
+      }
+      html += `<div class="ff-note" style="margin-top:6px">身高 ${ht} cm = ${inches.toFixed(1)} inches</div></div>`;
+      out.innerHTML = html;
+    });
   }
 
   /* ---------- Plasma 計算器(子選單) ---------- */
