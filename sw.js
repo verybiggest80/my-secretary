@@ -1,5 +1,5 @@
 /* Service Worker — 頁面採網路優先(確保拿到新版),資源採快取優先+背景更新 */
-const VERSION = 'v1.20.0';
+const VERSION = 'v1.21.0';
 const CACHE = `secretary-${VERSION}`;
 const SHELL = [
   './',
@@ -33,7 +33,49 @@ self.addEventListener('activate', (e) => {
     caches.keys()
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
+      .then(() => prefetchAssets())   /* 換版後立刻把班表附件補齊 */
   );
+});
+
+/* 從 schedule-data.js 取出所有 files/... 路徑(班表 PDF/xlsx 與頁面圖),
+   全部放進快取,確保離線也能開啟雲端班表 */
+async function prefetchAssets() {
+  const cache = await caches.open(CACHE);
+  let urls = [];
+  try {
+    const res = await fetch('./js/schedule-data.js', { cache: 'no-cache' });
+    if (res.ok) {
+      cache.put('./js/schedule-data.js', res.clone());
+      const text = await res.text();
+      urls = [...new Set((text.match(/files\/[A-Za-z0-9._\/-]+/g) || []))].map((u) => './' + u);
+    }
+  } catch { /* 離線時略過 */ }
+
+  let done = 0;
+  await Promise.all(urls.map(async (u) => {
+    try {
+      if (await cache.match(u)) { done++; return; }        // 已有就不重抓
+      const r = await fetch(u);
+      if (r.ok) { await cache.put(u, r); done++; }
+    } catch { /* 單檔失敗不影響其他 */ }
+  }));
+  return { total: urls.length, cached: done };
+}
+
+async function cacheStatus() {
+  const cache = await caches.open(CACHE);
+  const keys = await cache.keys();
+  const files = keys.filter((r) => /\/files\//.test(r.url)).length;
+  return { version: VERSION, entries: keys.length, files };
+}
+
+self.addEventListener('message', (e) => {
+  const msg = e.data || {};
+  const reply = (data) => {
+    if (e.ports && e.ports[0]) e.ports[0].postMessage(data);
+  };
+  if (msg.type === 'PREFETCH') e.waitUntil(prefetchAssets().then(reply));
+  else if (msg.type === 'STATUS') e.waitUntil(cacheStatus().then(reply));
 });
 
 self.addEventListener('fetch', (e) => {

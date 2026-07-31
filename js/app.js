@@ -67,6 +67,25 @@
         });
       }).catch(() => {});
 
+      /* 每天首次開啟時預抓班表附件,確保隔天離線也能用 */
+      const warmCache = () => {
+        if (!navigator.onLine) return;                       // 離線就別試
+        if (navigator.connection && navigator.connection.saveData) return; // 尊重省流量模式
+        const today = new Date().toDateString();
+        if (localStorage.getItem('sec_warmDate') === JSON.stringify(today)) return;
+        const sw = navigator.serviceWorker.controller;
+        if (!sw) return;                                     // 首次安裝尚未接管,下次再說
+        const ch = new MessageChannel();
+        ch.port1.onmessage = () => localStorage.setItem('sec_warmDate', JSON.stringify(today));
+        sw.postMessage({ type: 'PREFETCH' }, [ch.port2]);
+      };
+      setTimeout(warmCache, 3000);                           // 開啟後 3 秒,不影響首頁載入速度
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') setTimeout(warmCache, 1500);
+      });
+      window.addEventListener('online', () => setTimeout(warmCache, 1500));
+      window.SecretaryWarm = warmCache;
+
       let hadController = !!navigator.serviceWorker.controller;
       let reloaded = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {

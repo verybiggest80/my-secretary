@@ -177,6 +177,15 @@ window.Pages.home = (function () {
         </div>
         <button id="set-save" class="btn-primary">儲存</button>
         <button id="set-back" class="btn-secondary">返回</button>
+      </div>
+      <div class="work-card">
+        <h2>📥 離線資料</h2>
+        <div class="tile-sub" id="cache-status">檢查中…</div>
+        <button id="cache-refresh" class="btn-secondary">立即下載離線資料</button>
+        <div class="formula-hint">
+          App 每天首次開啟時會自動在背景把班表檔案存到手機,<br>
+          之後即使沒有網路也能查看會診/值班/Cover 與雲端班表。
+        </div>
       </div>`;
 
     const done = () => {
@@ -190,6 +199,34 @@ window.Pages.home = (function () {
       done();
     });
     root.querySelector('#set-back').addEventListener('click', done);
+
+    /* 離線資料狀態 */
+    const statusEl = root.querySelector('#cache-status');
+    const refreshBtn = root.querySelector('#cache-refresh');
+    const ask = (type) => new Promise((resolve) => {
+      const sw = navigator.serviceWorker && navigator.serviceWorker.controller;
+      if (!sw) return resolve(null);
+      const ch = new MessageChannel();
+      const timer = setTimeout(() => resolve(null), 20000);
+      ch.port1.onmessage = (e) => { clearTimeout(timer); resolve(e.data); };
+      sw.postMessage({ type }, [ch.port2]);
+    });
+    const showStatus = async () => {
+      const s = await ask('STATUS');
+      statusEl.textContent = s
+        ? `已存離線檔案 ${s.files} 個(含班表圖與原檔)・版本 ${s.version}`
+        : '此環境不支援離線快取(需以網址開啟並允許 Service Worker)';
+    };
+    showStatus();
+    refreshBtn.addEventListener('click', async () => {
+      refreshBtn.disabled = true;
+      refreshBtn.textContent = '下載中…';
+      const r = await ask('PREFETCH');
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = '立即下載離線資料';
+      if (r) statusEl.textContent = `已更新:${r.cached}/${r.total} 個班表檔案可離線使用`;
+      else showStatus();
+    });
   }
 
   function init(el, ctx) {
