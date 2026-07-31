@@ -8,19 +8,28 @@ window.Pages.home = (function () {
     { id: 'cover', size: 'bar' }
   ];
 
-  /* 名字是否出現在本月班表任何名單中(通訊錄/Cover/值班/會診) */
+  function ymOf(dt) { return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0'); }
+  function monthData(dt) {
+    const SD = window.ScheduleData;
+    if (!SD || !SD.months) return null;
+    return SD.months[ymOf(dt)] || null;
+  }
+
+  /* 名字是否出現在任一月份班表的名單中(通訊錄/Cover/值班/會診) */
   function nameInRoster(q) {
     const SD = window.ScheduleData;
-    if (!SD) return false;
+    if (!SD || !SD.months) return false;
     const clean = (s) => String(s).replace(/[((].*?[))]/g, '').trim();
     const names = new Set();
-    (SD.directory || []).forEach((d) => names.add(d.name));
-    Object.values(SD.cover || {}).forEach((arr) => arr.forEach((p) => {
-      names.add(clean(p.by));
-      names.add(clean(p.off));
-    }));
-    Object.values(SD.oncallB || {}).forEach((n) => names.add(n));
-    Object.values(SD.consult || {}).forEach((n) => names.add(n));
+    Object.values(SD.months).forEach((md) => {
+      (md.directory || []).forEach((d) => names.add(d.name));
+      Object.values(md.cover || {}).forEach((arr) => arr.forEach((p) => {
+        names.add(clean(p.by));
+        names.add(clean(p.off));
+      }));
+      Object.values(md.oncallB || {}).forEach((n) => names.add(n));
+      Object.values(md.consult || {}).forEach((n) => names.add(n));
+    });
     for (const n of names) {
       if (n && (n.includes(q) || q.includes(n))) return true;
     }
@@ -86,17 +95,16 @@ window.Pages.home = (function () {
       if (!q) {
         body = `<div class="cover-msg" style="color:var(--text-2)">請按右上角齒輪圖案設置姓名以開啟貼心功能</div>`;
       } else {
-        const SD = window.ScheduleData;
         const target = new Date();
         if (tm) target.setDate(target.getDate() + 1);
-        const ym = target.getFullYear() + '-' + String(target.getMonth() + 1).padStart(2, '0');
-        if (!SD || SD.month !== ym) {
-          body = `<div class="cover-msg" style="color:var(--text-2)">${tm ? '明天已是下個月,' : ''}班表尚未更新,無法查詢 Cover</div>`;
+        const md = monthData(target);
+        if (!md) {
+          body = `<div class="cover-msg" style="color:var(--text-2)">${ymOf(target)} 班表尚未更新,無法查詢 Cover</div>`;
         } else if (!nameInRoster(q)) {
           /* 名字在整份班表中查不到(綽號/英文)→ 引導設置真實姓名 */
           body = `<div class="cover-msg" style="color:var(--text-2)">請按右上角齒輪設置真實姓名</div>`;
         } else {
-          const pairs = (SD.cover && SD.cover[target.getDate()]) || [];
+          const pairs = (md.cover && md.cover[target.getDate()]) || [];
           const mine = pairs.filter((p) => p.by.includes(q) || q.includes(p.by));
           body = mine.length
             ? `<div class="cover-msg">你${word}要Cover${mine.map((m) => esc(m.off)).join('、')}喔! 辛苦了!</div>`

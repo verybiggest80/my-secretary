@@ -24,42 +24,59 @@ window.Pages.work = (function () {
     document.head.appendChild(s);
   }
 
-  function findDoc(name) {
+  /* 依日期取得該月份資料(找不到回傳 null) */
+  function ymOf(dt) { return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0'); }
+  function monthData(dt) {
     const SD = window.ScheduleData;
-    const d = SD && SD.directory.find((x) => x.name === name);
+    if (!SD || !SD.months) return null;
+    return SD.months[ymOf(dt)] || null;
+  }
+  /* 通訊錄:優先用該月;查不到再翻其他月份 */
+  function allDirectory() {
+    const SD = window.ScheduleData;
+    if (!SD || !SD.months) return [];
+    const seen = new Set(), out = [];
+    Object.keys(SD.months).sort().reverse().forEach((k) =>
+      (SD.months[k].directory || []).forEach((d) => {
+        if (!seen.has(d.code)) { seen.add(d.code); out.push(d); }
+      }));
+    return out;
+  }
+  function findDoc(name, md) {
+    const list = (md && md.directory) || allDirectory();
+    const d = list.find((x) => x.name === name) || allDirectory().find((x) => x.name === name);
     return { name: name || '—', code: d ? d.code : '—', phone: (d && d.phone) || '—' };
   }
 
-  /* 取得今日資訊;若資料月份與本月不符回傳 null */
+  /* 取得今日資訊;若當月無班表資料回傳 null */
   function todayInfo() {
-    const SD = window.ScheduleData;
-    if (!SD) return null;
     const now = new Date();
-    const ymOf = (dt) => dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
-    if (SD.month !== ymOf(now)) return null;
+    const md = monthData(now);
+    if (!md) return null;
     const d = now.getDate();
     let consultNote = '';
-    let consultName = SD.consult[d];
-    if (!consultName) { consultName = SD.oncallB[d]; consultNote = '假日改急會診,由值班醫師負責'; }
-    const inRange = (arr) => { const r = arr.find((r) => d >= r.from && d <= r.to); return r ? r.name : null; };
+    let consultName = md.consult[d];
+    if (!consultName) { consultName = md.oncallB[d]; consultNote = '假日改急會診,由值班醫師負責'; }
+    const inRange = (arr) => { const r = (arr || []).find((r) => d >= r.from && d <= r.to); return r ? r.name : null; };
 
-    /* 值班以每日 07:30 交接:07:30 前仍顯示前一日的值班醫師 */
+    /* 值班以每日 07:30 交接:07:30 前仍顯示前一日的值班醫師(可跨月) */
     const shifted = new Date(now.getTime() - (7 * 60 + 30) * 60000);
+    const smd = monthData(shifted);
     let oncall, oncallNote = '';
-    if (ymOf(shifted) === SD.month) {
-      oncall = findDoc(SD.oncallB[shifted.getDate()]);
+    if (smd) {
+      oncall = findDoc(smd.oncallB[shifted.getDate()], smd);
       if (shifted.getDate() !== d) oncallNote = `${shifted.getMonth() + 1}/${shifted.getDate()} 值班・07:30 交接`;
     } else {
-      oncall = findDoc(null);
-      oncallNote = '前月班表已過期';
+      oncall = findDoc(null, md);
+      oncallNote = '前一日班表資料不存在';
     }
 
     return {
       day: d,
-      consult: findDoc(consultName), consultNote,
+      consult: findDoc(consultName, md), consultNote,
       oncall, oncallNote,
-      icuMed: findDoc(inRange(SD.icuMed)),
-      icuSurg: findDoc(inRange(SD.icuSurg))
+      icuMed: findDoc(inRange(md.icuMed), md),
+      icuSurg: findDoc(inRange(md.icuSurg), md)
     };
   }
 
@@ -91,10 +108,11 @@ window.Pages.work = (function () {
           ${docTile('w-icu-med', '🫁', '內ICU', info.icuMed)}
           ${docTile('w-icu-surg', '😷', '外ICU', info.icuSurg)}`;
       } else {
+        const have = SD && SD.months ? Object.keys(SD.months).sort().join('、') : '無';
         tilesHtml = `
           <div class="tile bar">
-            <h3>⚠️ 班表尚未更新</h3>
-            <div class="tile-sub">目前資料為 ${SD ? SD.month : '無'},請上傳 ${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')} 的班表給 Claude 更新。</div>
+            <h3>⚠️ 本月班表尚未更新</h3>
+            <div class="tile-sub">現有資料:${have};請提供 ${ymOf(now)} 的班表給 Claude 更新。</div>
           </div>`;
       }
 
@@ -116,7 +134,7 @@ window.Pages.work = (function () {
             <div class="tile-sub">查看雲端/本機班表</div>
           </div>
         </div>
-        <div class="formula-hint" style="margin-top:8px">資料來源:${SD ? SD.month + ' 班表(' + SD.updated + ' 更新)' : '—'}</div>`;
+        <div class="formula-hint" style="margin-top:8px">資料來源:${ymOf(now)} 班表(${SD ? SD.updated : '—'} 更新)</div>`;
 
       root.querySelector('#w-dir').addEventListener('click', renderDirectory);
       root.querySelector('#w-helper').addEventListener('click', renderHelper);
@@ -153,7 +171,7 @@ window.Pages.work = (function () {
     root.appendChild(card);
 
     const listEl = card.querySelector('#dir-list');
-    const all = (window.ScheduleData && window.ScheduleData.directory) || [];
+    const all = allDirectory();
 
     function draw(q) {
       q = (q || '').trim().toLowerCase();
