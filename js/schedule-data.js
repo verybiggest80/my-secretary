@@ -17,16 +17,16 @@ window.ScheduleData = {
     },
     {
       title: "大內科班表",
-      label: "07月大內科班表",
-      month: "2026-07",
-      file: "files/medicine-2026-07.xlsx",
+      label: "08月大內科班表",
+      month: "2026-08",
+      file: "files/medicine-2026-08.xlsx",
       pages: [
-        "files/medicine-2026-07/p1.jpg", "files/medicine-2026-07/p2.jpg",
-        "files/medicine-2026-07/p3.jpg", "files/medicine-2026-07/p4.jpg",
-        "files/medicine-2026-07/p5.jpg", "files/medicine-2026-07/p6.jpg",
-        "files/medicine-2026-07/p7.jpg", "files/medicine-2026-07/p8.jpg",
-        "files/medicine-2026-07/p9.jpg", "files/medicine-2026-07/p10.jpg",
-        "files/medicine-2026-07/p11.jpg", "files/medicine-2026-07/p12.jpg"
+        "files/medicine-2026-08/p1.jpg", "files/medicine-2026-08/p2.jpg",
+        "files/medicine-2026-08/p3.jpg", "files/medicine-2026-08/p4.jpg",
+        "files/medicine-2026-08/p5.jpg", "files/medicine-2026-08/p6.jpg",
+        "files/medicine-2026-08/p7.jpg", "files/medicine-2026-08/p8.jpg",
+        "files/medicine-2026-08/p9.jpg", "files/medicine-2026-08/p10.jpg",
+        "files/medicine-2026-08/p11.jpg", "files/medicine-2026-08/p12.jpg"
       ]
     }
   ],
