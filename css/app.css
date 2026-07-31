@@ -287,6 +287,31 @@ body {
 .dx-nav { display: flex; gap: 8px; margin-top: 16px; }
 .dx-nav .btn-secondary { margin-top: 0; }
 
+/* ===== MALA 重點整理 ===== */
+.mala-list { margin: 6px 0 0; padding-left: 18px; }
+.mala-list li { font-size: .87rem; line-height: 1.6; margin-bottom: 7px; }
+.mala-list.strong li { font-size: .95rem; font-weight: 600; margin-bottom: 5px; }
+.mala-list.strong li::marker { color: var(--accent); }
+.mala-label {
+  font-size: .78rem; font-weight: 700; color: var(--accent);
+  background: var(--accent-soft); display: inline-block;
+  padding: 3px 9px; border-radius: 10px; margin: 12px 0 4px;
+}
+.mala-label:first-of-type { margin-top: 4px; }
+.mala-note { font-size: .78rem; color: var(--text-2); line-height: 1.55; margin-top: 10px; }
+.mala-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 6px; }
+.mala-table { border-collapse: collapse; min-width: 560px; font-size: .8rem; }
+.mala-table th, .mala-table td {
+  border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; line-height: 1.5;
+}
+.mala-table th { background: var(--accent-soft); color: var(--accent); font-weight: 700; white-space: nowrap; }
+.mala-table td:first-child { font-weight: 700; white-space: nowrap; }
+.mala-table td:nth-child(2) { white-space: nowrap; color: var(--text-2); }
+.mala-table .tag-first {
+  display: inline-block; font-size: .68rem; font-weight: 700;
+  background: var(--accent); color: #fff; padding: 1px 7px; border-radius: 9px; margin-top: 3px;
+}
+
 /* ===== Plasma 計算器 ===== */
 .pl-line { display: flex; flex-direction: column; gap: 3px; padding: 6px 0; }
 .pl-line + .pl-line { border-top: 1px dashed var(--border); }

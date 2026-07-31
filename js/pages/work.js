@@ -384,6 +384,11 @@ window.Pages.work = (function () {
         <div class="tile-icon">⚖️</div>
         <div class="tile-sub">Ideal・Adjusted BW</div>
       </div>
+      <div class="tile square" id="h-mala">
+        <h3>MALA</h3>
+        <div class="tile-icon">💊</div>
+        <div class="tile-sub">透析指徵・模式比較</div>
+      </div>
       <div class="tile square dx-tile" id="dx-hypoNa">
         <h3>Hyponatremia</h3>
         <div class="tile-icon">🧭</div>
@@ -410,8 +415,79 @@ window.Pages.work = (function () {
     grid.querySelector('#h-plasma').addEventListener('click', renderPlasmaMenu);
     grid.querySelector('#h-crcl').addEventListener('click', renderCrCl);
     grid.querySelector('#h-ibw').addEventListener('click', renderIBW);
+    grid.querySelector('#h-mala').addEventListener('click', renderMala);
     ['hypoNa', 'hyperNa', 'hyperCa', 'hypoCa'].forEach((k) =>
       grid.querySelector('#dx-' + k).addEventListener('click', () => renderDx(k)));
+  }
+
+  /* ---------- MALA 重點整理 ---------- */
+  function renderMala() {
+    const draw = () => {
+      const M = window.MalaData;
+      root.innerHTML = '';
+      root.appendChild(backRowTo('← 臨床幫手', renderHelper));
+      if (!M) {
+        const e = document.createElement('div');
+        e.className = 'work-card';
+        e.innerHTML = '<div class="empty-hint">無法載入 MALA 資料</div>';
+        root.appendChild(e);
+        return;
+      }
+
+      const card = document.createElement('div');
+      card.className = 'work-card';
+      card.innerHTML = `
+        <h2>💊 ${M.title}</h2>
+        <div class="dx-subtitle">${M.subtitle}</div>
+        <ul class="mala-list">${M.intro.map((s) => `<li>${s}</li>`).join('')}</ul>`;
+      root.appendChild(card);
+
+      const ind = document.createElement('div');
+      ind.className = 'work-card';
+      ind.innerHTML = `
+        <h2>⚡ RRT 啟動指徵</h2>
+        <div class="mala-label">絕對適應症 — 符合任一項即建議啟動</div>
+        <ul class="mala-list strong">${M.indications.absolute.map((s) => `<li>${s}</li>`).join('')}</ul>
+        <div class="mala-label">合併下列情況可放寬門檻、提早啟動</div>
+        <ul class="mala-list">${M.indications.relative.map((s) => `<li>${s}</li>`).join('')}</ul>`;
+      root.appendChild(ind);
+
+      const stop = document.createElement('div');
+      stop.className = 'work-card';
+      stop.innerHTML = `
+        <h2>🛑 脫離(終止)標準</h2>
+        <ul class="mala-list strong">${M.stopping.map((s) => `<li>${s}</li>`).join('')}</ul>
+        <div class="mala-note">${M.stoppingNote}</div>`;
+      root.appendChild(stop);
+
+      const tb = document.createElement('div');
+      tb.className = 'work-card';
+      tb.innerHTML = `
+        <h2>📊 RRT 模式比較</h2>
+        <div class="mala-table-wrap">
+          <table class="mala-table">
+            <thead><tr>${M.table.head.map((h) => `<th>${h}</th>`).join('')}</tr></thead>
+            <tbody>${M.table.rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>
+          </table>
+        </div>
+        <div class="mala-note">表格可左右滑動查看</div>`;
+      root.appendChild(tb);
+
+      const pearls = document.createElement('div');
+      pearls.className = 'work-card';
+      pearls.innerHTML = `
+        <h2>💡 處方與臨床要點</h2>
+        <ul class="mala-list">${M.pearls.map((s) => `<li>${s}</li>`).join('')}</ul>`;
+      root.appendChild(pearls);
+      window.scrollTo(0, 0);
+    };
+
+    if (window.MalaData) return draw();
+    const s = document.createElement('script');
+    s.src = 'js/mala-data.js';
+    s.onload = draw;
+    s.onerror = draw;
+    document.head.appendChild(s);
   }
 
   /* ---------- 24hr Creatinine Clearance ---------- */
