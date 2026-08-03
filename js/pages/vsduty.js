@@ -23,6 +23,9 @@ window.Pages.vsduty = (function () {
   /* 姓名比對:設定的真實姓名與班表名字互為包含即算命中 */
   const hit = (a, b) => !!a && !!b && (a.includes(b) || b.includes(a));
 
+  /* 區域字串:原表格換行處會缺逗號(A1,A2,A8B1,B2,B3)→ 補成 A1,A2,A8,B1,B2,B3 */
+  const fixRegion = (s) => String(s).replace(/(\d)([A-Za-z])/g, '$1,$2');
+
   /* 當日查房:排除 Fellow 代查(f),同班別的多個區域併為一筆 */
   function myRounds(name, V, d) {
     const list = ((V.rounds && V.rounds[d]) || []).filter((r) => !r.f && hit(name, r.doctor));
@@ -30,7 +33,7 @@ window.Pages.vsduty = (function () {
     list.forEach((r) => {
       const g = byShift.find((x) => x.shift === r.shift);
       /* region 內若含「〉和〈」代表原表格為跨區合併儲存格 */
-      const regs = String(r.region).split('〉和〈');
+      const regs = String(r.region).split('〉和〈').map(fixRegion);
       if (g) regs.forEach((x) => { if (!g.regions.includes(x)) g.regions.push(x); });
       else byShift.push({ shift: r.shift, regions: regs });
     });
