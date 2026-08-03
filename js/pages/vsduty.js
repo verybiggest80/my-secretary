@@ -119,7 +119,7 @@ window.Pages.vsduty = (function () {
       const mine = myRounds(name, V, d);
       html += mine.length
         ? card('🏥', '復大查房',
-            mine.map((r) => `您${word}要查<b>${esc(r.shift)}班</b>的〈${r.regions.map(esc).join('〉和〈')}〉喔! 辛苦了!`).join('<br>'), true)
+            mine.map((r) => `您${word}要查 <b>${esc(r.shift)}班</b> 的〈${r.regions.map(esc).join('〉和〈')}〉喔! 辛苦了!`).join('<br>'), true)
         : card('🏥', '復大查房', `您${word}不用查復大，去休息吧!`, false);
 
       html += calendar(name, target, V);
