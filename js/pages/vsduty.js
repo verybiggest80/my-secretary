@@ -23,6 +23,20 @@ window.Pages.vsduty = (function () {
   /* 姓名比對:設定的真實姓名與班表名字互為包含即算命中 */
   const hit = (a, b) => !!a && !!b && (a.includes(b) || b.includes(a));
 
+  /* 當日查房:排除 Fellow 代查(f),同班別的多個區域併為一筆 */
+  function myRounds(name, V, d) {
+    const list = ((V.rounds && V.rounds[d]) || []).filter((r) => !r.f && hit(name, r.doctor));
+    const byShift = [];
+    list.forEach((r) => {
+      const g = byShift.find((x) => x.shift === r.shift);
+      /* region 內若含「〉和〈」代表原表格為跨區合併儲存格 */
+      const regs = String(r.region).split('〉和〈');
+      if (g) regs.forEach((x) => { if (!g.regions.includes(x)) g.regions.push(x); });
+      else byShift.push({ shift: r.shift, regions: regs });
+    });
+    return byShift;
+  }
+
   /* 當月日曆:日期下方以「超/健/復」標示個人業務 */
   function calendar(name, target, V) {
     const y = target.getFullYear(), m = target.getMonth();
@@ -40,7 +54,7 @@ window.Pages.vsduty = (function () {
       const tags = [];
       if (hit(name, V.echoAM && V.echoAM[d]) || hit(name, V.echoPM && V.echoPM[d])) tags.push('<i class="t-echo">超</i>');
       if (hit(name, V.health && V.health[d])) tags.push('<i class="t-health">健</i>');
-      if (((V.rounds && V.rounds[d]) || []).some((r) => hit(name, r.doctor))) tags.push('<i class="t-round">復</i>');
+      if (myRounds(name, V, d).length) tags.push('<i class="t-round">復</i>');
       const dow = new Date(y, m, d).getDay();
       const cls = [
         'cal-cell',
@@ -98,11 +112,11 @@ window.Pages.vsduty = (function () {
         ? card('🩺', '健診', `您${word}要做健診喔! 辛苦了!`, true)
         : card('🩺', '健診', `您${word}不用作健診，太棒了!`, false);
 
-      /* 復大查房 */
-      const mine = ((V.rounds && V.rounds[d]) || []).filter((r) => hit(name, r.doctor));
+      /* 復大查房:F 開頭日期由 Fellow 代查,不列入 */
+      const mine = myRounds(name, V, d);
       html += mine.length
         ? card('🏥', '復大查房',
-            mine.map((r) => `您${word}要查<b>${esc(r.shift)}班</b>的〈${esc(r.region)}〉喔! 辛苦了!`).join('<br>'), true)
+            mine.map((r) => `您${word}要查<b>${esc(r.shift)}班</b>的〈${r.regions.map(esc).join('〉和〈')}〉喔! 辛苦了!`).join('<br>'), true)
         : card('🏥', '復大查房', `您${word}不用查復大，去休息吧!`, false);
 
       html += calendar(name, target, V);
