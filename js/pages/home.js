@@ -116,11 +116,14 @@ window.Pages.home = (function () {
     }
   };
 
-  /* 讀取方塊設定;過濾已移除的方塊(如舊版的 CRRT/班表),補上新的 Cover 卡片 */
+  /* 讀取方塊設定;過濾已移除的方塊(如舊版的 CRRT/班表)
+     Cover 只給住院醫師版;主治醫師版改用 VS Duty 分頁 */
   function tiles() {
-    const t = ls.get('tiles', DEFAULT_TILES).filter((x) => RENDERERS[x.id]);
-    if (!t.some((x) => x.id === 'cover')) t.push({ id: 'cover', size: 'bar' });
-    return t.length ? t : DEFAULT_TILES;
+    const isVS = ls.get('role', 'resident') === 'vs';
+    let t = ls.get('tiles', DEFAULT_TILES).filter((x) => RENDERERS[x.id]);
+    if (isVS) t = t.filter((x) => x.id !== 'cover');
+    else if (!t.some((x) => x.id === 'cover')) t.push({ id: 'cover', size: 'bar' });
+    return t.length ? t : DEFAULT_TILES.filter((x) => !isVS || x.id !== 'cover');
   }
   function saveTiles(t) { ls.set('tiles', t); }
 
