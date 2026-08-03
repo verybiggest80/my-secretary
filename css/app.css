@@ -287,6 +287,12 @@ body {
 .dx-nav { display: flex; gap: 8px; margin-top: 16px; }
 .dx-nav .btn-secondary { margin-top: 0; }
 
+/* ===== 首頁免責聲明 ===== */
+.home-note {
+  text-align: center; font-size: .72rem; color: var(--text-2);
+  margin: 20px 0 2px; line-height: 1.5;
+}
+
 /* ===== VS Duty ===== */
 .vs-datebar {
   display: flex; align-items: center; justify-content: space-between;

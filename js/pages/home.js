@@ -163,6 +163,12 @@ window.Pages.home = (function () {
       grid.appendChild(el);
     });
 
+    /* 首頁最下方免責聲明 */
+    const note = document.createElement('div');
+    note.className = 'home-note';
+    note.textContent = 'AI可能會犯錯，請依正式班表為準';
+    root.appendChild(note);
+
     /* Cover 卡片:今天/明天切換 */
     const ct = root.querySelector('#cover-toggle');
     if (ct) ct.addEventListener('click', (e) => {
