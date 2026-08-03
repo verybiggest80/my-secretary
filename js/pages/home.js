@@ -183,6 +183,14 @@ window.Pages.home = (function () {
           <label for="set-realname">真實姓名(用於查詢班表 Cover)</label>
           <input id="set-realname" type="text" value="${esc(ls.get('realName', ''))}" placeholder="例:許瑞廷" autocomplete="off">
         </div>
+        <div class="field">
+          <label>職級版本</label>
+          <div class="segmented" id="set-role">
+            <button data-r="resident" class="${ls.get('role', 'resident') !== 'vs' ? 'active' : ''}">住院醫師版</button>
+            <button data-r="vs" class="${ls.get('role', 'resident') === 'vs' ? 'active' : ''}">主治醫師版</button>
+          </div>
+          <div class="formula-hint" style="margin-top:6px">主治醫師版會在下方分頁列增加 <b>VS Duty</b>(腎超・健診・復大查房)。</div>
+        </div>
         <button id="set-save" class="btn-primary">儲存</button>
         <button id="set-back" class="btn-secondary">返回</button>
       </div>
@@ -201,9 +209,18 @@ window.Pages.home = (function () {
       headerBtn.classList.remove('hidden');
       render();
     };
+    let curRole = ls.get('role', 'resident');
+    root.querySelectorAll('#set-role button').forEach((b) =>
+      b.addEventListener('click', () => {
+        curRole = b.dataset.r;
+        root.querySelectorAll('#set-role button').forEach((x) => x.classList.toggle('active', x === b));
+      }));
+
     root.querySelector('#set-save').addEventListener('click', () => {
       ls.set('userName', root.querySelector('#set-name').value.trim());
       ls.set('realName', root.querySelector('#set-realname').value.trim());
+      ls.set('role', curRole);
+      if (window.applyRole) window.applyRole();
       done();
     });
     root.querySelector('#set-back').addEventListener('click', done);

@@ -1,5 +1,5 @@
 /* Service Worker — 頁面採網路優先(確保拿到新版),資源採快取優先+背景更新 */
-const VERSION = 'v1.23.0';
+const VERSION = 'v1.24.0';
 const CACHE = `secretary-${VERSION}`;
 const SHELL = [
   './',
@@ -15,6 +15,7 @@ const SHELL = [
   './js/pages/home.js',
   './js/pages/todo.js',
   './js/pages/work.js',
+  './js/pages/vsduty.js',
   './icons/icon-180.png',
   './icons/icon-192.png',
   './icons/icon-512.png'

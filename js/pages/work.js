@@ -195,7 +195,10 @@ window.Pages.work = (function () {
 
     /* 雲端班表:隨網站部署,所有裝置皆可開啟(每個檔案一張卡片) */
     const SD = window.ScheduleData;
-    const entries = (SD && SD.cloud) || [];
+    /* 過月後自動隱藏舊月份:以每日 07:30 為界,1 號 07:30 前仍保留上個月 */
+    const shifted = new Date(Date.now() - (7 * 60 + 30) * 60000);
+    const cutoff = ymOf(shifted);
+    const entries = ((SD && SD.cloud) || []).filter((e) => !e.month || e.month >= cutoff);
     if (entries.length === 0) {
       const cloud = document.createElement('div');
       cloud.className = 'work-card';

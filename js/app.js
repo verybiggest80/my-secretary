@@ -1,14 +1,15 @@
 /* app.js — 入口:分頁路由 + 頁面腳本延遲載入(需要時才注入 <script>)
    不使用 ES modules,file:// 直接開啟也能運作 */
 (function () {
-  const TITLES = { home: '首頁', todo: 'To Do List', work: 'Work' };
+  const TITLES = { home: '首頁', todo: 'To Do List', work: 'Work', vsduty: 'VS Duty' };
   window.Pages = window.Pages || {};   // 各頁面腳本會把自己註冊到這裡
   const inited = {};
 
   const container = {
     home: document.getElementById('page-home'),
     todo: document.getElementById('page-todo'),
-    work: document.getElementById('page-work')
+    work: document.getElementById('page-work'),
+    vsduty: document.getElementById('page-vsduty')
   };
   const headerBtn = document.getElementById('header-action');
   const gearBtn = document.getElementById('header-gear');
@@ -50,6 +51,17 @@
   document.querySelectorAll('.tab').forEach((tab) => {
     tab.addEventListener('click', () => navigate(tab.dataset.page));
   });
+
+  /* 職級:主治醫師版(vs)才顯示 VS Duty 分頁 */
+  function applyRole() {
+    let role = 'resident';
+    try { role = JSON.parse(localStorage.getItem('sec_role')) || 'resident'; } catch {}
+    const isVS = role === 'vs';
+    document.querySelectorAll('.vs-only').forEach((el) => el.classList.toggle('hidden', !isVS));
+    if (!isVS && document.querySelector('.tab[data-page="vsduty"]').classList.contains('active')) navigate('home');
+  }
+  window.applyRole = applyRole;
+  applyRole();
 
   /* 首頁優先載入,其餘分頁點擊時才載入 */
   navigate('home');
