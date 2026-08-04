@@ -290,8 +290,9 @@ body {
 /* ===== 首頁免責聲明 ===== */
 .home-note {
   text-align: center; font-size: .72rem; color: var(--text-2);
-  margin: 20px 0 2px; line-height: 1.5;
+  margin: 20px 0 2px; line-height: 1.7;
 }
+.home-credit { opacity: .8; letter-spacing: .02em; }
 
 /* ===== VS Duty ===== */
 .vs-datebar {

@@ -163,10 +163,10 @@ window.Pages.home = (function () {
       grid.appendChild(el);
     });
 
-    /* 首頁最下方免責聲明 */
+    /* 首頁最下方免責聲明與署名 */
     const note = document.createElement('div');
     note.className = 'home-note';
-    note.textContent = 'AI可能會犯錯，請依正式班表為準';
+    note.innerHTML = 'AI可能會犯錯，請依正式班表為準<br><span class="home-credit">Produced by Fellow 瑞廷</span>';
     root.appendChild(note);
 
     /* Cover 卡片:今天/明天切換 */
