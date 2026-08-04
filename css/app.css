@@ -365,6 +365,26 @@ body {
 .di-table td:nth-child(3) { white-space: nowrap; color: var(--text-2); }
 .di-table { min-width: 640px; }
 
+.di-alert {
+  font-size: .87rem; line-height: 1.6; padding: 10px 12px; border-radius: 10px;
+  background: color-mix(in srgb, var(--warn) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent);
+  margin-bottom: 10px;
+}
+.di-acc {
+  border: 1px solid var(--border); border-radius: 12px;
+  margin-bottom: 8px; overflow: hidden; background: var(--bg);
+}
+.di-acc > summary {
+  padding: 12px 14px; font-size: .93rem; font-weight: 600;
+  cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center;
+}
+.di-acc > summary::-webkit-details-marker { display: none; }
+.di-acc > summary::after { content: '▾'; color: var(--accent); font-size: .9rem; }
+.di-acc[open] > summary { color: var(--accent); border-bottom: 1px solid var(--border); }
+.di-acc[open] > summary::after { content: '▴'; }
+.di-acc .mala-list { padding: 10px 18px 12px 32px; margin: 0; }
+
 /* ===== Plasma 計算器 ===== */
 .pl-line { display: flex; flex-direction: column; gap: 3px; padding: 6px 0; }
 .pl-line + .pl-line { border-top: 1px dashed var(--border); }

@@ -520,12 +520,24 @@ window.Pages.work = (function () {
         <div class="mala-note">表格可左右滑動查看</div>`;
       root.appendChild(tb);
 
-      /* 依型態選藥 */
+      /* Desmopressin 低血鈉警示 */
+      const hn = document.createElement('div');
+      hn.className = 'work-card';
+      hn.innerHTML = `
+        <h2>⚠️ 低血鈉 — desmopressin 主要併發症</h2>
+        <div class="di-alert">${D.hypoNa.stats}</div>
+        <ul class="mala-list">${D.hypoNa.items.map((s) => `<li>${s}</li>`).join('')}</ul>`;
+      root.appendChild(hn);
+
+      /* 依 DI 型態的處置(可展開) */
       const bt = document.createElement('div');
       bt.className = 'work-card';
-      bt.innerHTML = `<h2>🧭 依 DI 型態選藥</h2>` +
-        D.byType.map((g) => `<div class="mala-label">${g.name}</div>
-          <ul class="mala-list">${g.items.map((s) => `<li>${s}</li>`).join('')}</ul>`).join('');
+      bt.innerHTML = `<h2>🧭 依 DI 型態的處置</h2>
+        <div class="mala-note" style="margin:-4px 0 10px">點標題展開內容</div>` +
+        D.types.map((g) => `<details class="di-acc">
+          <summary>${g.name}</summary>
+          <ul class="mala-list">${g.items.map((s) => `<li>${s}</li>`).join('')}</ul>
+        </details>`).join('');
       root.appendChild(bt);
 
       const pe = document.createElement('div');
