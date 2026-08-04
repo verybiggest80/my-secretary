@@ -392,6 +392,11 @@ window.Pages.work = (function () {
         <div class="tile-icon">💊</div>
         <div class="tile-sub">透析指徵・模式比較</div>
       </div>
+      <div class="tile square" id="h-di">
+        <h3>尿崩症 (DI)</h3>
+        <div class="tile-icon">💧</div>
+        <div class="tile-sub">治療・補水・用藥</div>
+      </div>
       <div class="tile square dx-tile" id="dx-hypoNa">
         <h3>Hyponatremia</h3>
         <div class="tile-icon">🧭</div>
@@ -424,8 +429,118 @@ window.Pages.work = (function () {
     grid.querySelector('#h-crcl').addEventListener('click', renderCrCl);
     grid.querySelector('#h-ibw').addEventListener('click', renderIBW);
     grid.querySelector('#h-mala').addEventListener('click', renderMala);
+    grid.querySelector('#h-di').addEventListener('click', renderDI);
     ['hypoNa', 'hyperNa', 'hyperCa', 'hypoCa', 'polyuria'].forEach((k) =>
       grid.querySelector('#dx-' + k).addEventListener('click', () => renderDx(k)));
+  }
+
+  /* ---------- 尿崩症(DI)治療 ---------- */
+  function renderDI() {
+    const draw = () => {
+      const D = window.DiData;
+      root.innerHTML = '';
+      root.appendChild(backRowTo('← 臨床幫手', renderHelper));
+      if (!D) {
+        const e = document.createElement('div');
+        e.className = 'work-card';
+        e.innerHTML = '<div class="empty-hint">無法載入 DI 資料</div>';
+        root.appendChild(e);
+        return;
+      }
+
+      const head = document.createElement('div');
+      head.className = 'work-card';
+      head.innerHTML = `
+        <h2>💧 ${D.title}</h2>
+        <div class="dx-subtitle">${D.subtitle}</div>
+        <ul class="mala-list">${D.goals.map((s) => `<li>${s}</li>`).join('')}</ul>`;
+      root.appendChild(head);
+
+      /* 水分缺乏量 + 計算器 */
+      const saved = ls.get('diInputs', {});
+      const def = document.createElement('div');
+      def.className = 'work-card';
+      def.innerHTML = `
+        <h2>💦 水分缺乏量與矯正速率</h2>
+        <div class="di-formula">${D.deficit.formula}</div>
+        <div class="mala-note">前提假設:${D.deficit.assumptions.join('、')}</div>
+        <div class="field" style="margin-top:14px">
+          <label for="di-bw">病前體重 (kg)</label>
+          <input id="di-bw" type="number" inputmode="decimal" value="${saved.bw ?? ''}" placeholder="例:70">
+        </div>
+        <div class="field">
+          <label for="di-na">目前血鈉 (mEq/L)</label>
+          <input id="di-na" type="number" inputmode="decimal" value="${saved.na ?? ''}" placeholder="例:160">
+        </div>
+        <button id="di-calc" class="btn-primary">計算水分缺乏量</button>
+        <div id="di-out"></div>
+        <div class="mala-label">矯正原則</div>
+        <ul class="mala-list">${D.deficit.rules.map((s) => `<li>${s}</li>`).join('')}</ul>
+        <div class="mala-note">${D.deficit.example}</div>`;
+      root.appendChild(def);
+
+      def.querySelector('#di-calc').addEventListener('click', () => {
+        const bw = parseFloat(def.querySelector('#di-bw').value);
+        const na = parseFloat(def.querySelector('#di-na').value);
+        const out = def.querySelector('#di-out');
+        if (Number.isNaN(bw) || Number.isNaN(na) || bw <= 0 || na <= 0) {
+          out.innerHTML = '<div class="ff-result warn"><div class="ff-note">請填寫病前體重與目前血鈉</div></div>';
+          return;
+        }
+        if (na <= 140) {
+          out.innerHTML = '<div class="ff-result warn"><div class="ff-note">血鈉 ≤ 140,無自由水缺乏(此公式不適用)</div></div>';
+          return;
+        }
+        ls.set('diInputs', { bw, na });
+        const deficit = 0.6 * bw * (1 - 140 / na);
+        const rate = deficit * 1000 / 24;
+        const posm = 2 * na;
+        out.innerHTML = `<div class="ff-result" style="text-align:left">
+          <div class="pl-line"><span class="pl-label">水分缺乏量</span><span class="pl-val">${deficit.toFixed(2)} L</span></div>
+          <div class="pl-line"><span class="pl-label">24 小時補完既有缺乏所需速率</span><span class="pl-val">≈ ${Math.round(rate)} mL/h</span></div>
+          <div class="ff-note" style="margin-top:8px">
+            估計血漿滲透壓 ≈ ${posm} mOsm/kg(2 × 血鈉,無高血糖時)<br>
+            首日目標:降至 320–330 mOsm/kg 或降幅約 50%;其餘於 24–72 小時緩降。<br>
+            ⚠️ 以上<b>未含持續流失</b>,須另外補足並頻繁追蹤電解質。
+          </div>
+        </div>`;
+      });
+
+      /* 藥物比較表 */
+      const tb = document.createElement('div');
+      tb.className = 'work-card';
+      tb.innerHTML = `
+        <h2>💊 治療藥物比較</h2>
+        <div class="mala-table-wrap">
+          <table class="mala-table di-table">
+            <thead><tr>${D.table.head.map((h) => `<th>${h}</th>`).join('')}</tr></thead>
+            <tbody>${D.table.rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>
+          </table>
+        </div>
+        <div class="mala-note">表格可左右滑動查看</div>`;
+      root.appendChild(tb);
+
+      /* 依型態選藥 */
+      const bt = document.createElement('div');
+      bt.className = 'work-card';
+      bt.innerHTML = `<h2>🧭 依 DI 型態選藥</h2>` +
+        D.byType.map((g) => `<div class="mala-label">${g.name}</div>
+          <ul class="mala-list">${g.items.map((s) => `<li>${s}</li>`).join('')}</ul>`).join('');
+      root.appendChild(bt);
+
+      const pe = document.createElement('div');
+      pe.className = 'work-card';
+      pe.innerHTML = `<h2>💡 臨床要點</h2>
+        <ul class="mala-list">${D.pearls.map((s) => `<li>${s}</li>`).join('')}</ul>`;
+      root.appendChild(pe);
+      window.scrollTo(0, 0);
+    };
+
+    if (window.DiData) return draw();
+    const s = document.createElement('script');
+    s.src = 'js/di-data.js';
+    s.onload = draw; s.onerror = draw;
+    document.head.appendChild(s);
   }
 
   /* ---------- MALA 重點整理 ---------- */
