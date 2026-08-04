@@ -411,6 +411,11 @@ window.Pages.work = (function () {
         <h3>Hypocalcemia</h3>
         <div class="tile-icon">🧭</div>
         <div class="tile-sub">Interactive work-up</div>
+      </div>
+      <div class="tile square dx-tile" id="dx-polyuria">
+        <h3>Polyuria</h3>
+        <div class="tile-icon">🧭</div>
+        <div class="tile-sub">Interactive work-up</div>
       </div>`;
     root.appendChild(grid);
     grid.querySelector('#h-ff').addEventListener('click', renderCRRT);
@@ -419,7 +424,7 @@ window.Pages.work = (function () {
     grid.querySelector('#h-crcl').addEventListener('click', renderCrCl);
     grid.querySelector('#h-ibw').addEventListener('click', renderIBW);
     grid.querySelector('#h-mala').addEventListener('click', renderMala);
-    ['hypoNa', 'hyperNa', 'hyperCa', 'hypoCa'].forEach((k) =>
+    ['hypoNa', 'hyperNa', 'hyperCa', 'hypoCa', 'polyuria'].forEach((k) =>
       grid.querySelector('#dx-' + k).addEventListener('click', () => renderDx(k)));
   }
 

@@ -377,5 +377,140 @@ window.DxData = {
         ]
       }
     }
+    },
+
+  /* ============ POLYURIA ============ */
+  polyuria: {
+    title: "Polyuria",
+    subtitle: "Work-up of polyuria & polydipsia (DI vs primary polydipsia)",
+    root: "confirm",
+    nodes: {
+      confirm: {
+        step: "Step 1",
+        q: "Confirm true hypotonic polyuria (24-hour urine collection)",
+        note: "Accepted thresholds: 24-h urine volume > 50 mL/kg body weight with urine osmolality < 300 mOsm/kg H\u2082O.",
+        options: [
+          { label: "Meets both criteria", next: "solute" },
+          { label: "Does not meet criteria", next: "notTrue" }
+        ]
+      },
+      notTrue: {
+        dx: "Not true hypotonic polyuria",
+        detail: "Re-examine the complaint before pursuing DI testing.",
+        tests: [
+          "Urinary frequency / nocturia without increased volume (UTI, overactive bladder, BPH)",
+          "Volume < 50 mL/kg/day \u2014 quantify with a repeat, properly collected 24-h sample",
+          "Urine osmolality \u2265 300 mOsm/kg \u2014 evaluate as a solute diuresis instead"
+        ]
+      },
+      solute: {
+        step: "Step 2",
+        q: "Exclude a solute (osmotic) diuresis",
+        note: "Solute excretion rate = urine osmolality \u00d7 24-h urine volume (L). > 15 mOsm/kg body weight/day indicates osmotic diuresis. Also screen routine labs and urinalysis for glucose and intrinsic renal disease.",
+        options: [
+          { label: "Solute excretion > 15 mOsm/kg/day \u2014 osmotic diuresis", next: "osmotic" },
+          { label: "Solute excretion \u2264 15 mOsm/kg/day \u2014 water diuresis", next: "posm" }
+        ]
+      },
+      osmotic: {
+        dx: "Osmotic (solute) diuresis \u2014 not diabetes insipidus",
+        tests: [
+          "Glucose: uncontrolled diabetes mellitus / glycosuria (urinalysis)",
+          "Urea: recovery phase of AKI, post-obstructive diuresis, high-protein feeds",
+          "Mannitol, radiocontrast, saline loading",
+          "Intrinsic renal disease impairing concentration"
+        ]
+      },
+      posm: {
+        step: "Step 3",
+        q: "Assess plasma osmolality / serum Na\u207a",
+        note: "Diagnosis of DI requires an osmotic stimulus to AVP secretion, then measuring the adequacy of that secretion (plasma AVP or copeptin) or its renal effect (urine osmolality).",
+        options: [
+          { label: "Already hyperosmolar (P-Osm > 295 or Na\u207a > 145) with U-Osm < 800", next: "hyperDI" },
+          { label: "Normal plasma osmolality & Na\u207a (intact thirst: polyuria + polydipsia)", next: "deprive" }
+        ]
+      },
+      hyperDI: {
+        dx: "Diabetes insipidus confirmed \u2014 primary polydipsia excluded",
+        detail: "Hyperosmolality with submaximally concentrated urine rules out primary polydipsia. Now separate central from nephrogenic DI.",
+        tests: [
+          "\u26a0\ufe0f Draw plasma AVP (or copeptin) BEFORE giving desmopressin \u2014 it is needed if the response turns out indeterminate",
+          "Give AVP 5 units SC, or preferably desmopressin (DDAVP) 1\u20132 \u00b5g SC/IV",
+          "Recheck urine osmolality at 1\u20132 hours"
+        ],
+        options: [ { label: "Proceed to desmopressin challenge", next: "ddavp" } ]
+      },
+      deprive: {
+        step: "Step 4",
+        q: "Combined fluid deprivation test (indirect + direct)",
+        note: "Deprive until P-Osm > 295 mOsm/kg or Na\u207a > 145 mmol/L, measuring urine osmolality and plasma AVP/copeptin, then give desmopressin. Absolute U-Osm values overlap between partial CDI, partial NDI and primary polydipsia \u2014 interpret AVP/copeptin plotted against the concurrent plasma osmolality.",
+        options: [
+          { label: "Urine concentrates appropriately; little/no further rise after desmopressin", next: "pp" },
+          { label: "U-Osm stays low; AVP\u00b7copeptin absent or blunted for the P-Osm; rises after desmopressin", next: "cdi" },
+          { label: "U-Osm stays low; AVP\u00b7copeptin clearly elevated; no rise after desmopressin", next: "ndi" },
+          { label: "Overlapping / partial responses \u2014 indeterminate", next: "indet" }
+        ]
+      },
+      ddavp: {
+        step: "Step 5",
+        q: "Desmopressin challenge \u2014 rise in urine osmolality at 1\u20132 hours",
+        note: "Water diuresis in CDI washes out the medullary gradient and downregulates AQP2, so the early rise may be smaller than expected.",
+        options: [
+          { label: "Increase > 50%", next: "cdi" },
+          { label: "Increase < 10%", next: "ndi" },
+          { label: "Increase 10\u201350% (indeterminate)", next: "indet" }
+        ]
+      },
+      cdi: {
+        dx: "Central diabetes insipidus (AVP deficiency)",
+        tests: [
+          "Plasma AVP/copeptin absent (complete) or blunted (partial) relative to plasma osmolality",
+          "MRI: loss of the posterior pituitary bright spot supports CDI \u2014 better at ruling OUT than ruling IN (absent in up to 20% of normal older subjects; may persist in partial CDI)",
+          "Pituitary stalk > 2\u20133 mm is pathologic \u2192 CSF/plasma \u03b2-hCG & AFP (germinoma), ACE + chest imaging (sarcoidosis), bone/skin survey (histiocytosis)",
+          "If in doubt repeat MRI every 3\u20136 months: progressive enlargement suggests germinoma (biopsy); shrinkage suggests lymphocytic infundibuloneurohypophysitis",
+          "Treatment: desmopressin"
+        ]
+      },
+      ndi: {
+        dx: "Nephrogenic diabetes insipidus (renal resistance to AVP)",
+        tests: [
+          "Plasma AVP/copeptin clearly elevated for the plasma osmolality",
+          "Drugs: lithium, demeclocycline, foscarnet, amphotericin B, cidofovir",
+          "Electrolytes: hypercalcemia, severe hypokalemia",
+          "Renal: post-obstructive, recovery from ATN, sickle cell, Sj\u00f6gren; congenital AVPR2 / AQP2 mutations",
+          "Treatment: remove the cause; low-solute diet, thiazide \u00b1 amiloride, free access to water"
+        ]
+      },
+      pp: {
+        dx: "Primary polydipsia",
+        tests: [
+          "AVP/copeptin response to osmotic stimulation is within or above the normal range",
+          "Maximal concentrating capacity may be blunted by chronic overhydration \u2014 relate U-Osm to AVP under basal, non-dehydrated conditions",
+          "Posterior pituitary bright spot is usually preserved on MRI",
+          "Look for psychiatric illness, dry mouth/medications, hypothalamic lesions (sarcoidosis, TB meningitis)",
+          "Treatment: water restriction. \u26a0\ufe0f Desmopressin can precipitate severe hyponatremia"
+        ]
+      },
+      indet: {
+        dx: "Indeterminate result \u2014 refine with copeptin, then a trial",
+        detail: "Overlap is expected because concentrating capacity is variably reduced in all forms of DI and in primary polydipsia; basal P-Osm and Na\u207a overlap too.",
+        tests: [
+          "Interpret the baseline plasma AVP/copeptin drawn before desmopressin: elevated \u2192 NDI; absent/blunted for the P-Osm \u2192 CDI",
+          "Copeptin (C-terminal fragment of the AVP prohormone, released 1:1 with AVP) measured at the end of water deprivation is more accurate than the indirect U-Osm response \u2014 but must be sampled during hyperosmolality (water deprivation or hypertonic saline)",
+          "After hypertonic saline, urine osmolality and AVP excretion are unreliable (accompanying solute diuresis)",
+          "Note: certain diseases (sarcoidosis, TB meningitis, hypothalamic lesions) can cause more than one type of DI"
+        ],
+        options: [ { label: "Still unclear \u2192 monitored therapeutic desmopressin trial", next: "trial" } ]
+      },
+      trial: {
+        dx: "Monitored desmopressin therapeutic trial (48\u201372 h)",
+        tests: [
+          "Polyuria AND thirst/polydipsia abolished, no water intoxication \u2192 uncomplicated central DI",
+          "Polyuria abolished but thirst/polydipsia persist and hyponatremia develops \u2192 primary polydipsia",
+          "No effect even when given by injection \u2192 nephrogenic DI",
+          "\u26a0\ufe0f Check serum Na\u207a within a few days to avoid severe hyponatremia"
+        ]
+      }
+    }
   }
 };
