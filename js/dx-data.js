@@ -5,126 +5,131 @@
 window.DxData = {
 
   /* ============ HYPONATREMIA ============ */
+  /* 依 Fig. 15.17 Diagnostic approach to the hyponatremic patient */
   hypoNa: {
     title: "Hyponatremia",
-    subtitle: "Serum Na⁺ < 135 mmol/L",
-    root: "osm",
+    subtitle: "Serum Na\u207a < 135 mmol/L \u2014 diagnostic approach",
+    root: "tonicity",
     nodes: {
-      osm: {
+      tonicity: {
         step: "Step 1",
-        q: "Measure serum osmolality",
-        note: "Rules out non-hypotonic hyponatremia before pursuing ADH work-up.",
+        q: "Confirm a true hypoosmolar state",
+        note: "First task: make sure the hyponatremia reflects hypoosmolality and is not pseudohyponatremia or translocational hyponatremia.",
         options: [
-          { label: "High (> 295 mOsm/kg)", next: "hypertonic" },
-          { label: "Normal (275–295 mOsm/kg)", next: "isotonic" },
-          { label: "Low (< 275 mOsm/kg)", next: "uosm" }
+          { label: "Serum osmolality LOW (< 275 mOsm/kg) \u2014 true hypotonic hyponatremia", next: "volume" },
+          { label: "Serum osmolality HIGH (> 295) \u2014 effective osmoles present", next: "translocational" },
+          { label: "Serum osmolality NORMAL (275\u2013295)", next: "pseudo" }
         ]
       },
-      hypertonic: {
-        dx: "Hypertonic (translocational) hyponatremia",
-        detail: "Effective osmoles pull water into the extracellular space and dilute Na⁺.",
+      translocational: {
+        dx: "Translocational hyponatremia",
+        detail: "Effective osmoles draw water out of cells and dilute serum Na\u207a.",
         tests: [
-          "Hyperglycemia — correct Na⁺ +1.6–2.4 mmol/L per 100 mg/dL glucose above 100",
+          "Hyperglycemia \u2014 correct Na\u207a ~ +1.6\u20132.4 mmol/L per 100 mg/dL glucose above 100",
           "Mannitol, sucrose (IVIG), maltose, glycine (TURP irrigation)",
-          "Treat the underlying osmole; Na⁺ normalizes as it clears"
+          "Treat the underlying osmole; Na\u207a normalizes as it clears"
         ]
       },
-      isotonic: {
-        dx: "Isotonic hyponatremia (pseudohyponatremia)",
-        detail: "Lab artifact from displaced plasma water; measured Na⁺ low but activity normal.",
+      pseudo: {
+        dx: "Pseudohyponatremia (lab artifact)",
+        detail: "Displaced plasma water lowers the measured Na\u207a while Na\u207a activity is normal.",
         tests: [
           "Severe hyperlipidemia (high triglycerides / chylomicrons)",
-          "Severe hyperproteinemia (e.g., multiple myeloma, IVIG)",
-          "Confirm with direct ion-selective electrode (whole-blood/blood-gas Na⁺)"
-        ]
-      },
-      uosm: {
-        step: "Step 2",
-        q: "Urine osmolality (true hypotonic hyponatremia)",
-        note: "Distinguishes suppressed vs active ADH.",
-        options: [
-          { label: "≤ 100 mOsm/kg (ADH suppressed)", next: "dilute" },
-          { label: "> 100 mOsm/kg (ADH active)", next: "volume" }
-        ]
-      },
-      dilute: {
-        dx: "Maximally dilute urine — appropriate ADH suppression",
-        detail: "Water intake / low solute overwhelms dilution capacity.",
-        tests: [
-          "Primary polydipsia (psychiatric, high water intake)",
-          "Beer potomania / 'tea-and-toast' low solute intake",
-          "Reset osmostat (chronic, mild, stable)",
-          "Management: fluid restriction; ensure adequate solute intake"
+          "Severe hyperproteinemia (multiple myeloma, IVIG)",
+          "Confirm with a direct ion-selective electrode (whole-blood / blood-gas Na\u207a)"
         ]
       },
       volume: {
-        step: "Step 3",
-        q: "Assess volume status (ADH active)",
+        step: "Step 2",
+        q: "Assessment of volume status",
+        note: "ECF volume assessment provides the most useful working classification \u2014 a low serum Na\u207a may occur with decreased, normal or increased total body sodium.",
         options: [
-          { label: "Hypovolemic", next: "hypoUNa" },
-          { label: "Euvolemic", next: "euvol" },
-          { label: "Hypervolemic", next: "hyperUNa" }
+          { label: "Hypovolemia \u2014 \u2193 total body water, \u2193\u2193 total body sodium", next: "hypoUNa" },
+          { label: "Euvolemia (no edema) \u2014 \u2191 total body water, total body sodium unchanged", next: "euUNa" },
+          { label: "Hypervolemia \u2014 \u2191\u2191 total body water, \u2191 total body sodium", next: "hyperUNa" }
         ]
       },
       hypoUNa: {
-        step: "Step 4",
-        q: "Hypovolemic — check urine Na⁺",
+        step: "Step 3",
+        q: "Hypovolemic \u2014 urine Na\u207a",
         options: [
-          { label: "U-Na < 30 mmol/L (renal Na⁺ avid)", next: "extraRenal" },
-          { label: "U-Na > 30 mmol/L (renal loss)", next: "renalLoss" }
-        ]
-      },
-      extraRenal: {
-        dx: "Hypovolemic — extrarenal Na⁺/fluid loss",
-        tests: [
-          "GI losses: vomiting, diarrhea",
-          "Third-spacing: pancreatitis, burns, bowel obstruction",
-          "Remote diuretic use / insensible losses",
-          "Management: isotonic saline; Na⁺ rises as ADH stimulus removed — watch for over-correction"
+          { label: "U[Na] > 30 mmol/L", next: "renalLoss" },
+          { label: "U[Na] < 30 mmol/L", next: "extraRenal" }
         ]
       },
       renalLoss: {
-        dx: "Hypovolemic — renal salt wasting",
+        dx: "Renal losses",
         tests: [
-          "Thiazide diuretics (classic culprit)",
-          "Primary adrenal insufficiency (check cortisol / ACTH stim)",
-          "Salt-wasting nephropathy; cerebral salt wasting (intracranial disease)",
-          "Check FeNa, urine Cl, K⁺, VBG to sub-type"
+          "Diuretic excess (thiazides especially; consider surreptitious use)",
+          "Mineralocorticoid deficiency",
+          "Salt-losing nephropathy",
+          "Bicarbonaturia with RTA and metabolic alkalosis",
+          "Cerebral salt wasting",
+          "Treatment: isotonic saline / solute repletion \u2014 watch for brisk water diuresis and over-correction once the stimulus is removed"
         ]
       },
-      euvol: {
-        dx: "Euvolemic hyponatremia",
-        detail: "Work up SIADH only after excluding thyroid & adrenal causes.",
+      extraRenal: {
+        dx: "Extrarenal losses",
+        detail: "U[Na] < 30 reflects an appropriate renal response to volume depletion.",
         tests: [
-          "SIADH (diagnosis of exclusion): U-Osm > 100, U-Na > 30, euvolemic, normal thyroid/adrenal — causes: CNS, pulmonary, malignancy, drugs (SSRI, carbamazepine, cyclophosphamide), pain/nausea, post-op",
-          "Hypothyroidism (check TSH, free T4)",
-          "Glucocorticoid deficiency / secondary adrenal insufficiency (check AM cortisol)",
-          "Management: fluid restriction ± salt/urea; consider vaptan; correct < 8 mmol/L per 24 h"
+          "Vomiting, diarrhea",
+          "Third spacing of fluids: burns, pancreatitis, trauma (also ileus, muscle injury)",
+          "Treatment: isotonic saline / solute repletion; monitor Na\u207a closely for over-correction"
+        ]
+      },
+      euUNa: {
+        step: "Step 3",
+        q: "Euvolemic \u2014 urine Na\u207a (typically > 30 mmol/L)",
+        note: "Urine osmolality then separates the AVP-driven causes from those with suppressed AVP.",
+        options: [
+          { label: "Urine osmolality > 100 mOsm/kg (AVP acting)", next: "euAVP" },
+          { label: "Urine osmolality < 100 mOsm/kg (AVP suppressed)", next: "euDilute" }
+        ]
+      },
+      euAVP: {
+        dx: "Euvolemic hyponatremia with AVP effect",
+        detail: "Exclude glucocorticoid deficiency and hypothyroidism before settling on SIADH.",
+        tests: [
+          "Glucocorticoid deficiency (check AM cortisol / ACTH stimulation)",
+          "Hypothyroidism (TSH, free T4)",
+          "Stress; pain, nausea, postoperative state",
+          "Drugs: desmopressin, chlorpropamide, carbamazepine/oxcarbazepine, SSRIs, antipsychotics, vincristine/cyclophosphamide, MDMA, opioids",
+          "SIADH \u2014 hypoosmolality with urine > 100 mOsm/kg; the most common cause of hyponatremia in hospitalized patients (diagnosis of exclusion)",
+          "Exercise-associated hyponatremia (marathon/ultra-endurance; excess hypotonic intake + nonosmotic AVP)"
+        ]
+      },
+      euDilute: {
+        dx: "Euvolemic with maximally dilute urine",
+        detail: "Water intake or low solute intake overwhelms a normal diluting mechanism (urine osmolality < 100 mOsm/kg).",
+        tests: [
+          "Primary polydipsia",
+          "Low solute intake \u2014 beer potomania, 'tea-and-toast', ovolactovegetarian or poor-appetite diets",
+          "Treatment: restrict water intake; increase dietary solute/protein"
         ]
       },
       hyperUNa: {
-        step: "Step 4",
-        q: "Hypervolemic — check urine Na⁺",
+        step: "Step 3",
+        q: "Hypervolemic \u2014 urine Na\u207a",
+        note: "Except in renal failure these states show avid Na\u207a retention (U[Na] often < 10) \u2014 which diuretics may mask.",
         options: [
-          { label: "U-Na < 30 mmol/L (Na⁺ avid)", next: "edematous" },
-          { label: "U-Na > 30 mmol/L", next: "renalFail" }
-        ]
-      },
-      edematous: {
-        dx: "Hypervolemic — effective arterial volume depletion",
-        tests: [
-          "Congestive heart failure",
-          "Cirrhosis with ascites",
-          "Nephrotic syndrome",
-          "Management: Na⁺ + fluid restriction, treat underlying disease, loop diuretic"
+          { label: "U[Na] > 30 mmol/L", next: "renalFail" },
+          { label: "U[Na] < 30 mmol/L", next: "edematous" }
         ]
       },
       renalFail: {
-        dx: "Hypervolemic — advanced kidney disease",
+        dx: "Acute or chronic renal failure",
         tests: [
-          "Acute or chronic kidney failure (impaired free-water excretion)",
-          "Concurrent diuretics",
-          "Management: fluid restriction; renal replacement if refractory"
+          "Impaired free-water excretion; concurrent diuretics",
+          "Treatment: fluid restriction; renal replacement therapy if refractory"
+        ]
+      },
+      edematous: {
+        dx: "Edematous states \u2014 decreased effective arterial volume",
+        tests: [
+          "Nephrotic syndrome",
+          "Cirrhosis",
+          "Cardiac failure",
+          "Treatment: treat the underlying disease; Na\u207a + fluid restriction, loop diuretic; vaptan often the best option in heart failure"
         ]
       }
     }

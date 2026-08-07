@@ -397,6 +397,11 @@ window.Pages.work = (function () {
         <div class="tile-icon">💧</div>
         <div class="tile-sub">治療・補水・用藥</div>
       </div>
+      <div class="tile square" id="h-hypona">
+        <h3>低血鈉治療</h3>
+        <div class="tile-icon">🧂</div>
+        <div class="tile-sub">依症狀分級處置</div>
+      </div>
       <div class="tile square dx-tile" id="dx-hypoNa">
         <h3>Hyponatremia</h3>
         <div class="tile-icon">🧭</div>
@@ -430,8 +435,75 @@ window.Pages.work = (function () {
     grid.querySelector('#h-ibw').addEventListener('click', renderIBW);
     grid.querySelector('#h-mala').addEventListener('click', renderMala);
     grid.querySelector('#h-di').addEventListener('click', renderDI);
+    grid.querySelector('#h-hypona').addEventListener('click', renderHypoNaTx);
     ['hypoNa', 'hyperNa', 'hyperCa', 'hypoCa', 'polyuria'].forEach((k) =>
       grid.querySelector('#dx-' + k).addEventListener('click', () => renderDx(k)));
+  }
+
+  /* ---------- 低血鈉治療 ---------- */
+  function renderHypoNaTx() {
+    const draw = () => {
+      const H = window.HypoNaTxData;
+      root.innerHTML = '';
+      root.appendChild(backRowTo('← 臨床幫手', renderHelper));
+      if (!H) {
+        const e = document.createElement('div');
+        e.className = 'work-card';
+        e.innerHTML = '<div class="empty-hint">無法載入資料</div>';
+        root.appendChild(e); return;
+      }
+      const add = (html) => {
+        const d = document.createElement('div');
+        d.className = 'work-card';
+        d.innerHTML = html;
+        root.appendChild(d);
+      };
+
+      add(`<h2>🧂 ${H.title}</h2><div class="dx-subtitle">${H.subtitle}</div>
+        <div class="mala-label">症狀嚴重度分級</div>
+        <div class="mala-table-wrap"><table class="mala-table sev-table">
+          <thead><tr>${H.severity.head.map((h) => `<th>${h}</th>`).join('')}</tr></thead>
+          <tbody>${H.severity.rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table></div>
+        <div class="mala-note">${H.severityNote}</div>`);
+
+      add(`<h2>🚦 治療演算法(依症狀)</h2>` +
+        H.algorithm.map((a) => `<div class="tx-block tx-${a.tone}">
+          <div class="tx-level">${a.level}</div>
+          <div class="tx-sx">${a.sx}</div>
+          <ul class="mala-list">${a.plan.map((p) => `<li>${p}</li>`).join('')}</ul>
+        </div>`).join(''));
+
+      add(`<h2>📏 矯正速率:目標與上限</h2>
+        <ul class="mala-list strong">${H.correction.limits.map((s) => `<li>${s}</li>`).join('')}</ul>
+        <div class="mala-label">ODS(滲透性脫髓鞘)高風險因子</div>
+        <ul class="mala-list">${H.correction.odsRisk.map((s) => `<li>${s}</li>`).join('')}</ul>
+        <div class="mala-label">血鈉監測頻率</div>
+        <ul class="mala-list">${H.correction.monitor.map((s) => `<li>${s}</li>`).join('')}</ul>`);
+
+      add(`<h2>💊 治療方式比較</h2>
+        <div class="mala-table-wrap"><table class="mala-table di-table">
+          <thead><tr>${H.table.head.map((h) => `<th>${h}</th>`).join('')}</tr></thead>
+          <tbody>${H.table.rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table></div>
+        <div class="mala-note">表格可左右滑動查看</div>`);
+
+      add(`<h2>🚰 限水的執行與失敗預測</h2>
+        <div class="mala-label">執行原則</div>
+        <ul class="mala-list">${H.restriction.rules.map((s) => `<li>${s}</li>`).join('')}</ul>
+        <div class="mala-label">預測限水會失敗的因子</div>
+        <ul class="mala-list">${H.restriction.failure.map((s) => `<li>${s}</li>`).join('')}</ul>
+        <div class="mala-note">住院的症狀性低血鈉病人若具備上述任一項,限水就不適合當作起始治療。</div>`);
+
+      add(`<h2>💡 臨床要點</h2>
+        <ul class="mala-list">${H.pearls.map((s) => `<li>${s}</li>`).join('')}</ul>`);
+      window.scrollTo(0, 0);
+    };
+    if (window.HypoNaTxData) return draw();
+    const s = document.createElement('script');
+    s.src = 'js/hyponatx-data.js';
+    s.onload = draw; s.onerror = draw;
+    document.head.appendChild(s);
   }
 
   /* ---------- 尿崩症(DI)治療 ---------- */

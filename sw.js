@@ -1,5 +1,5 @@
 /* Service Worker — 頁面採網路優先(確保拿到新版),資源採快取優先+背景更新 */
-const VERSION = 'v1.35.0';
+const VERSION = 'v1.36.0';
 const CACHE = `secretary-${VERSION}`;
 const SHELL = [
   './',
@@ -13,6 +13,7 @@ const SHELL = [
   './js/dx-data.js',
   './js/mala-data.js',
   './js/di-data.js',
+  './js/hyponatx-data.js',
   './js/pages/home.js',
   './js/pages/todo.js',
   './js/pages/work.js',
