@@ -96,7 +96,8 @@ window.DxData = {
           "Drugs: desmopressin, chlorpropamide, carbamazepine/oxcarbazepine, SSRIs, antipsychotics, vincristine/cyclophosphamide, MDMA, opioids",
           "SIADH \u2014 hypoosmolality with urine > 100 mOsm/kg; the most common cause of hyponatremia in hospitalized patients (diagnosis of exclusion)",
           "Exercise-associated hyponatremia (marathon/ultra-endurance; excess hypotonic intake + nonosmotic AVP)"
-        ]
+        ],
+        link: { id: "siadh", label: "SIADH 治療", sub: "限水・vaptan・urea・長期治療" }
       },
       euDilute: {
         dx: "Euvolemic with maximally dilute urine",

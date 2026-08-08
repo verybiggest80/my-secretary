@@ -440,6 +440,56 @@ window.Pages.work = (function () {
       grid.querySelector('#dx-' + k).addEventListener('click', () => renderDx(k)));
   }
 
+  /* ---------- SIADH 治療 ---------- */
+  function renderSiadh(backHandler) {
+    const draw = () => {
+      const S = window.SiadhData;
+      root.innerHTML = '';
+      root.appendChild(backRowTo('← Hyponatremia', backHandler || renderHelper));
+      if (!S) {
+        const e = document.createElement('div');
+        e.className = 'work-card';
+        e.innerHTML = '<div class="empty-hint">無法載入資料</div>';
+        root.appendChild(e); return;
+      }
+      const add = (html) => {
+        const d = document.createElement('div');
+        d.className = 'work-card';
+        d.innerHTML = html;
+        root.appendChild(d);
+      };
+
+      add(`<h2>📘 ${S.title}</h2><div class="dx-subtitle">${S.subtitle}</div>
+        <ul class="mala-list">${S.intro.map((s) => `<li>${s}</li>`).join('')}</ul>`);
+
+      add(`<h2>📊 各療法單用的療效</h2>
+        <div class="mala-table-wrap"><table class="mala-table sev-table">
+          <thead><tr>${S.efficacy.head.map((h) => `<th>${h}</th>`).join('')}</tr></thead>
+          <tbody>${S.efficacy.rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table></div>
+        <div class="mala-note">${S.efficacy.note}</div>`);
+
+      add(`<h2>💊 各療法細節</h2>
+        <div class="mala-note" style="margin:-4px 0 10px">點標題展開內容</div>` +
+        S.therapies.map((t) => `<details class="di-acc">
+          <summary>${t.name}</summary>
+          <ul class="mala-list">${t.items.map((s) => `<li>${s}</li>`).join('')}</ul>
+        </details>`).join(''));
+
+      add(`<h2>🕒 長期治療與停藥評估</h2>
+        <ul class="mala-list">${S.longTerm.map((s) => `<li>${s}</li>`).join('')}</ul>`);
+
+      add(`<h2>💡 臨床要點</h2>
+        <ul class="mala-list">${S.pearls.map((s) => `<li>${s}</li>`).join('')}</ul>`);
+      window.scrollTo(0, 0);
+    };
+    if (window.SiadhData) return draw();
+    const s = document.createElement('script');
+    s.src = 'js/siadh-data.js';
+    s.onload = draw; s.onerror = draw;
+    document.head.appendChild(s);
+  }
+
   /* ---------- 低血鈉治療 ---------- */
   function renderHypoNaTx() {
     const draw = () => {
@@ -991,6 +1041,13 @@ window.Pages.work = (function () {
               node.options.map((o, i) => `<button class="dx-opt" data-i="${i}">${esc(o.label)}</button>`).join('') +
               `</div>`;
           }
+          if (node.link) {
+            html += `<div class="dx-link-card" id="dx-link">
+              <div class="dx-link-title">📘 ${esc(node.link.label)}</div>
+              <div class="dx-link-sub">${esc(node.link.sub)}</div>
+              <span class="dx-link-arrow">›</span>
+            </div>`;
+          }
         }
 
         html += `<div class="dx-nav">
@@ -1007,6 +1064,8 @@ window.Pages.work = (function () {
           }));
         const back = card.querySelector('#dx-back');
         if (back) back.addEventListener('click', () => { stack.pop(); draw(); });
+        const lk = card.querySelector('#dx-link');
+        if (lk) lk.addEventListener('click', () => renderSiadh(() => { draw(); }));
         card.querySelector('#dx-restart').addEventListener('click', () => { stack.length = 1; draw(); });
         window.scrollTo(0, 0);
       }
