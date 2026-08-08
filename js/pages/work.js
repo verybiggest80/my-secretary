@@ -467,7 +467,7 @@ window.Pages.work = (function () {
         </table></div>
         <div class="mala-note">${H.severityNote}</div>`);
 
-      add(`<h2>🚦 治療演算法(依症狀)</h2>` +
+      add(`<h2>🚦 治療原則(依症狀)</h2>` +
         H.algorithm.map((a) => `<div class="tx-block tx-${a.tone}">
           <div class="tx-level">${a.level}</div>
           <div class="tx-sx">${a.sx}</div>
