@@ -401,6 +401,7 @@ body {
 .tx-ok .tx-level { color: var(--ok); }
 .tx-sx { font-size: .8rem; color: var(--text-2); margin: 3px 0 4px; line-height: 1.5; }
 .tx-block .mala-list { margin-top: 4px; }
+.mala-list li.sub { margin-left: 16px; list-style-type: circle; }
 
 /* ===== Plasma 計算器 ===== */
 .pl-line { display: flex; flex-direction: column; gap: 3px; padding: 6px 0; }

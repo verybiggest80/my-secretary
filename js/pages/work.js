@@ -471,7 +471,8 @@ window.Pages.work = (function () {
         H.algorithm.map((a) => `<div class="tx-block tx-${a.tone}">
           <div class="tx-level">${a.level}</div>
           <div class="tx-sx">${a.sx}</div>
-          <ul class="mala-list">${a.plan.map((p) => `<li>${p}</li>`).join('')}</ul>
+          <ul class="mala-list">${a.plan.map((p) => p.startsWith('> ')
+            ? `<li class="sub">${p.slice(2)}</li>` : `<li>${p}</li>`).join('')}</ul>
         </div>`).join(''));
 
       add(`<h2>📏 矯正速率:目標與上限</h2>
