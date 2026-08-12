@@ -5,7 +5,8 @@ window.Pages.home = (function () {
   const DEFAULT_TILES = [
     { id: 'date', size: 'bar' },
     { id: 'todo', size: 'bar' },
-    { id: 'cover', size: 'bar' }
+    { id: 'cover', size: 'bar' },
+    { id: 'meeting', size: 'bar' }
   ];
 
   function ymOf(dt) { return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0'); }
@@ -49,6 +50,7 @@ window.Pages.home = (function () {
   let root, nav, headerBtn, gearBtn, titleEl;
   let editing = false;
   let coverShowTomorrow = false; // Cover 卡片:false=今天, true=明天
+  let meetingShowToday = false;  // 會議卡片:false=明天(預設), true=今天
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -113,6 +115,32 @@ window.Pages.home = (function () {
       }
       if (q) body += `<button id="cover-toggle" class="cover-btn">${tm ? '回到今天' : '看看明天'}</button>`;
       return { title: `🤝 Cover${tm ? '(明天)' : ''}`, body, onTap: null };
+    },
+    meeting() {
+      const today = meetingShowToday;
+      const target = new Date();
+      if (!today) target.setDate(target.getDate() + 1);
+      const word = today ? '今天' : '明天';
+      const md = monthData(target);
+      const list = (md && md.meetings && md.meetings[target.getDate()]) || [];
+
+      let body;
+      if (!md) {
+        body = `<div class="mt-empty">${ymOf(target)} 會議表尚未更新</div>`;
+      } else if (!list.length) {
+        body = `<div class="mt-empty">${word}沒有需要提醒的會議 🎉</div>`;
+      } else {
+        body = list.map((m) => `<div class="mt-item">
+          <div class="mt-time">${esc(m.time)}</div>
+          <div class="mt-title">${esc(m.title)}</div>
+          <div class="mt-meta">📍 ${esc(m.place)}${m.speaker ? `・主講 ${esc(m.speaker)}` : ''}${m.host ? `・主持 ${esc(m.host)}` : ''}</div>
+        </div>`).join('');
+      }
+      body += `<button id="meeting-toggle" class="cover-btn">${today ? '回到明天' : '看今天會議'}</button>`;
+      return {
+        title: `📣 ${today ? '今日' : '明日'}會議提醒<span class="mt-date">${target.getMonth() + 1}/${target.getDate()}</span>`,
+        body, onTap: null
+      };
     }
   };
 
@@ -123,6 +151,7 @@ window.Pages.home = (function () {
     let t = ls.get('tiles', DEFAULT_TILES).filter((x) => RENDERERS[x.id]);
     if (isVS) t = t.filter((x) => x.id !== 'cover');
     else if (!t.some((x) => x.id === 'cover')) t.push({ id: 'cover', size: 'bar' });
+    if (!t.some((x) => x.id === 'meeting')) t.push({ id: 'meeting', size: 'bar' });
     return t.length ? t : DEFAULT_TILES.filter((x) => !isVS || x.id !== 'cover');
   }
   function saveTiles(t) { ls.set('tiles', t); }
@@ -168,6 +197,14 @@ window.Pages.home = (function () {
     note.className = 'home-note';
     note.innerHTML = 'AI可能會犯錯，請依正式班表為準<br><span class="home-credit">Developed by Fellow 瑞廷</span>';
     root.appendChild(note);
+
+    /* 會議卡片:明天/今天切換 */
+    const mt = root.querySelector('#meeting-toggle');
+    if (mt) mt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      meetingShowToday = !meetingShowToday;
+      render();
+    });
 
     /* Cover 卡片:今天/明天切換 */
     const ct = root.querySelector('#cover-toggle');
@@ -274,6 +311,7 @@ window.Pages.home = (function () {
   function show() {
     editing = false;
     coverShowTomorrow = false;
+    meetingShowToday = false;
     titleEl.textContent = greeting();
 
     headerBtn.textContent = '編輯';

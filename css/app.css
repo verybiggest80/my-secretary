@@ -287,6 +287,18 @@ body {
 .dx-nav { display: flex; gap: 8px; margin-top: 16px; }
 .dx-nav .btn-secondary { margin-top: 0; }
 
+/* ===== 明日會議提醒 ===== */
+.mt-date { font-size: .75rem; font-weight: 600; color: var(--text-2); margin-left: 4px; }
+.mt-item { padding: 8px 0; border-bottom: 1px dashed var(--border); }
+.mt-item:last-of-type { border-bottom: none; }
+.mt-time {
+  display: inline-block; font-size: .72rem; font-weight: 700; color: #fff;
+  background: var(--accent); padding: 2px 8px; border-radius: 9px; margin-bottom: 4px;
+}
+.mt-title { font-size: .95rem; font-weight: 600; line-height: 1.45; }
+.mt-meta { font-size: .76rem; color: var(--text-2); margin-top: 3px; line-height: 1.5; }
+.mt-empty { font-size: .95rem; font-weight: 600; color: var(--text-2); margin-top: 6px; }
+
 /* ===== 首頁免責聲明 ===== */
 .home-note {
   text-align: center; font-size: .72rem; color: var(--text-2);
