@@ -72,7 +72,7 @@ window.ScheduleData = {
         ],
         26: [
           { time: "07:30-08:30", title: "Case Conference暨進修返國報告", speaker: "陳偉宸/周嘉安醫師", host: "郭韋宏醫師", place: "3F會議室" },
-          { time: "12:30-13:30", title: "Semiar(附餐):Semaglutide ,講師:楊智超醫師" }
+          { time: "12:30", title: "Seminar(附餐):Semaglutide ,講師:楊智超醫師" }
         ],
         27: [
           { time: "07:30-08:30", title: "藥物檢查檢驗新知(4)(血腫)", speaker: "花宇揚醫師", host: "蘇祐立主任", place: "6F大禮堂" },
