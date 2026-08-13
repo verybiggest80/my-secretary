@@ -130,11 +130,18 @@ window.Pages.home = (function () {
       } else if (!list.length) {
         body = `<div class="mt-empty">${word}沒有需要提醒的會議 🎉</div>`;
       } else {
-        body = list.map((m) => `<div class="mt-item">
-          <div class="mt-time">${esc(m.time)}</div>
-          <div class="mt-title">${esc(m.title)}</div>
-          <div class="mt-meta">📍 ${esc(m.place)}${m.speaker ? `・主講 ${esc(m.speaker)}` : ''}${m.host ? `・主持 ${esc(m.host)}` : ''}</div>
-        </div>`).join('');
+        body = list.map((m) => {
+          /* 場地/主講/主持可能缺少(TimeTree 來源)，有才顯示 */
+          const meta = [];
+          if (m.place) meta.push(`📍 ${esc(m.place)}`);
+          if (m.speaker) meta.push(`主講 ${esc(m.speaker)}`);
+          if (m.host) meta.push(`主持 ${esc(m.host)}`);
+          return `<div class="mt-item">
+            <div class="mt-time">${esc(m.time)}</div>
+            <div class="mt-title">${esc(m.title)}</div>
+            ${meta.length ? `<div class="mt-meta">${meta.join('・')}</div>` : ''}
+          </div>`;
+        }).join('');
       }
       body += `<button id="meeting-toggle" class="cover-btn">${today ? '回到明天' : '看今天會議'}</button>`;
       return {

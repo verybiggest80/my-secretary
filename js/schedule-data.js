@@ -1,7 +1,7 @@
 /* schedule-data.js — 腎臟科班表資料(可同時保留多個月份)
    新增月份時:在 months 加一組 "YYYY-MM",並在 cloud 最前面加對應檔案即可。 */
 window.ScheduleData = {
-  updated: "2026-07-31",
+  updated: "2026-08-13",
   /* 雲端班表清單:新的排前面 */
   cloud: [
     {
@@ -63,9 +63,17 @@ window.ScheduleData = {
         3: [{ time: "07:45-08:30", title: "晨會:Orientation", speaker: "黃富誠醫師", host: "黃富誠醫師", place: "3F會議室" }],
         6: [{ time: "07:30-08:30", title: "全人暨跨領域聯合討論會(3)(胃)", speaker: "張源升醫師", host: "洪肇宏主任", place: "6F大禮堂" }],
         11: [{ time: "07:30-08:30", title: "科務會議", speaker: "鄭本忠副主任", host: "鄭本忠副主任", place: "3F會議室" }],
+        12: [{ time: "07:30", title: "童綜合林柏松教授演講" }],
         13: [{ time: "07:30-08:30", title: "外賓演講(4)(老年)(新)從多重共病到整合醫療:高齡整合門診的臨床實務創新與成效研究", speaker: "成大高齡醫學部 羅玉岱醫師", host: "沈峰志主任", place: "6F大禮堂" }],
-        20: [{ time: "07:30-08:30", title: "Mortality and Morbidity (1)(2)", speaker: "廖羽雙/邱之翰醫師", host: "陳建宏部長", place: "6F大禮堂" }],
-        26: [{ time: "07:30-08:30", title: "Case Conference暨進修返國報告", speaker: "陳偉宸/周嘉安醫師", host: "郭韋宏醫師", place: "3F會議室" }],
+        18: [{ time: "12:30", title: "Seminars(附餐):法布瑞氏症診斷及治療,講師:黃鏘綺醫師" }],
+        20: [
+          { time: "07:30-08:30", title: "Mortality and Morbidity (1)(2)", speaker: "廖羽雙/邱之翰醫師", host: "陳建宏部長", place: "6F大禮堂" },
+          { time: "12:30", title: "Seminar(附餐):(線上會議)SGLT2i & Micardis/Twynsta" }
+        ],
+        26: [
+          { time: "07:30-08:30", title: "Case Conference暨進修返國報告", speaker: "陳偉宸/周嘉安醫師", host: "郭韋宏醫師", place: "3F會議室" },
+          { time: "12:30-13:30", title: "Semiar(附餐):Semaglutide ,講師:楊智超醫師" }
+        ],
         27: [
           { time: "07:30-08:30", title: "藥物檢查檢驗新知(4)(血腫)", speaker: "花宇揚醫師", host: "蘇祐立主任", place: "6F大禮堂" },
           { time: "11:30-12:30", title: "超長期、14天再入院暨輪訓醫師座談會", speaker: "黃富誠醫師", host: "邱千華醫師", place: "3F會議室" }
