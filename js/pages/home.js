@@ -106,11 +106,18 @@ window.Pages.home = (function () {
           /* 名字在整份班表中查不到(綽號/英文)→ 引導設置真實姓名 */
           body = `<div class="cover-msg" style="color:var(--text-2)">請按右上角齒輪設置真實姓名</div>`;
         } else {
-          const pairs = (md.cover && md.cover[target.getDate()]) || [];
+          const day = target.getDate();
+          const pairs = (md.cover && md.cover[day]) || [];
           const mine = pairs.filter((p) => p.by.includes(q) || q.includes(p.by));
-          body = mine.length
-            ? `<div class="cover-msg">你${word}要Cover${mine.map((m) => esc(m.off)).join('、')}喔! 辛苦了!</div>`
-            : `<div class="cover-msg">${word}不用Cover別人，舒服!</div>`;
+          /* 會診欄位日期前有 F → 當期負責的總醫師要幫忙會診 */
+          const hp = (md.consultHelper || []).find((r) => day >= r.from && day <= r.to);
+          const helpConsult = (md.consultF || []).indexOf(day) >= 0 && !!hp &&
+            (hp.name.includes(q) || q.includes(hp.name));
+          const msgs = [];
+          if (helpConsult) msgs.push(`<div class="cover-msg">你${word}要幫忙會診喔!</div>`);
+          if (mine.length) msgs.push(`<div class="cover-msg">你${word}要Cover${mine.map((m) => esc(m.off)).join('、')}喔! 辛苦了!</div>`);
+          if (!msgs.length) msgs.push(`<div class="cover-msg">${word}不用Cover別人，舒服!</div>`);
+          body = msgs.join('');
         }
       }
       if (q) body += `<button id="cover-toggle" class="cover-btn">${tm ? '回到今天' : '看看明天'}</button>`;

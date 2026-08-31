@@ -161,6 +161,13 @@ window.ScheduleData = {
       },
       icuMed:  [],
       icuSurg: [],
+      /* 會診欄位日期前有 F = 該日需總醫師協助會診(一般病房 + ICU 合併) */
+      consultF: [1, 2, 3, 4, 8, 10, 16, 17, 18, 21, 22, 23, 24, 30],
+      /* 當月負責協助會診的總醫師 */
+      consultHelper: [
+        { from: 1,  to: 15, name: "王韋婷" },
+        { from: 16, to: 30, name: "許瑞廷" }
+      ],
       cover: {
         1: [{ off: "余晧維(AM)", by: "陳彥翰" }, { off: "方介垚(PM)", by: "吳振立" }],
         2: [{ off: "王湘綾(AM)", by: "施若琪" }],
