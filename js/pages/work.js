@@ -1,7 +1,6 @@
 /* work.js — 會診分頁:當日會診/值班/內外ICU + 醫師通訊錄 + 班表檔案 + CRRT FF 計算器 */
 window.Pages.work = (function () {
   const ls = window.Store.ls;
-  const fileStore = window.Store.fileStore;
 
   let root;
 
@@ -211,7 +210,7 @@ window.Pages.work = (function () {
   }
 
   /* ---------- 班表原檔 ---------- */
-  async function renderSchedule() {
+  function renderSchedule() {
     root.innerHTML = '';
     root.appendChild(backRow());
 
@@ -243,70 +242,6 @@ window.Pages.work = (function () {
       root.appendChild(cloud);
     });
 
-    const card = document.createElement('div');
-    card.className = 'work-card';
-    card.innerHTML = `<h2>📱 本機檔案</h2><div id="sch-body">載入中…</div>
-      <input id="sch-file" type="file" class="hidden">
-      <button id="sch-upload" class="btn-primary">上傳新班表</button>`;
-    root.appendChild(card);
-
-    const body = card.querySelector('#sch-body');
-    const fileInput = card.querySelector('#sch-file');
-
-    async function refresh() {
-      const files = await fileStore.listMeta('schedule');
-      if (files.length === 0) {
-        body.innerHTML = '<div class="empty-hint" style="padding:16px 0">尚未上傳班表</div>';
-        return;
-      }
-      const latest = files[0];
-      body.innerHTML = `
-        <div class="schedule-current">
-          <span class="file-icon">📄</span>
-          <div class="schedule-meta">
-            <div class="fname">${esc(latest.name)}</div>
-            <div class="fdate">上傳於 ${new Date(latest.date).toLocaleDateString('zh-TW')}</div>
-          </div>
-          <button class="h-open" data-id="${latest.id}" style="border:none;background:var(--accent);color:#fff;padding:8px 14px;border-radius:10px;font-weight:600">開啟</button>
-        </div>
-        ${files.length > 1 ? `
-          <div class="section-label">歷史班表</div>
-          <ul class="history-list">
-            ${files.slice(1).map((f) => `
-              <li>
-                <span class="h-name">${esc(f.name)}<br><small style="color:var(--text-2)">${new Date(f.date).toLocaleDateString('zh-TW')}</small></span>
-                <button class="h-open" data-id="${f.id}">開啟</button>
-                <button class="h-del" data-id="${f.id}">✕</button>
-              </li>`).join('')}
-          </ul>` : ''}`;
-
-      body.querySelectorAll('.h-open').forEach((b) =>
-        b.addEventListener('click', () => openFile(Number(b.dataset.id), files)));
-      body.querySelectorAll('.h-del').forEach((b) =>
-        b.addEventListener('click', async () => {
-          await fileStore.remove(Number(b.dataset.id));
-          refresh();
-        }));
-    }
-
-    function openFile(id, files) {
-      const rec = files.find((f) => f.id === id);
-      if (!rec) return;
-      const url = URL.createObjectURL(rec.blob);
-      window.open(url, '_blank');
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
-    }
-
-    card.querySelector('#sch-upload').addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', async () => {
-      const f = fileInput.files[0];
-      if (!f) return;
-      await fileStore.add({ category: 'schedule', name: f.name, type: f.type, blob: f, date: Date.now() });
-      fileInput.value = '';
-      refresh();
-    });
-
-    refresh();
   }
 
   /* ---------- 雲端班表閱覽器(App 內開啟,含返回鍵、自由縮放) ---------- */
