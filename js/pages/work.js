@@ -43,9 +43,17 @@ window.Pages.work = (function () {
     return out;
   }
   function findDoc(name, md) {
+    if (!name) return { name: '—', code: '—', phone: '—' };
     const list = (md && md.directory) || allDirectory();
-    const d = list.find((x) => x.name === name) || allDirectory().find((x) => x.name === name);
-    return { name: name || '—', code: d ? d.code : '—', phone: (d && d.phone) || '—' };
+    const look = (n) => list.find((x) => x.name === n) || allDirectory().find((x) => x.name === n);
+    /* 「主責/備援*」兩位醫師:姓名原樣顯示,代號與電話以 / 併列 */
+    const docs = String(name).split('/').map((x) => x.trim()).filter(Boolean)
+      .map((x) => look(x.replace(/\*$/, '')));
+    return {
+      name: name,
+      code: docs.map((d) => (d ? d.code : '—')).join(' / '),
+      phone: docs.map((d) => (d && d.phone) || '—').join(' / ')
+    };
   }
 
   /* 取得今日資訊;若當月無班表資料回傳 null */
@@ -71,10 +79,18 @@ window.Pages.work = (function () {
       oncallNote = '前一日班表資料不存在';
     }
 
+    /* 兩種班表格式:有 consultICU 表示會診分為 一般病房 / ICU內外 / LICU */
+    const splitICU = !!md.consultICU;
+    let icuName = splitICU ? md.consultICU[d] : null;
+    let icuNote = '';
+    if (splitICU && !icuName) { icuName = md.oncallB[d]; icuNote = '假日改急會診,由值班醫師負責'; }
+
     return {
-      day: d,
+      day: d, splitICU,
       consult: findDoc(consultName, md), consultNote,
       oncall, oncallNote,
+      icu: findDoc(icuName, md), icuNote,
+      licu: findDoc(md.licu || null, md),
       icuMed: findDoc(inRange(md.icuMed), md),
       icuSurg: findDoc(inRange(md.icuSurg), md)
     };
@@ -102,7 +118,13 @@ window.Pages.work = (function () {
 
       let tilesHtml;
       if (info) {
-        tilesHtml = `
+        tilesHtml = info.splitICU
+          ? `
+          ${docTile('w-consult', '🩺', '病房會診', info.consult, info.consultNote)}
+          ${docTile('w-oncall', '🌙', '值班', info.oncall, info.oncallNote)}
+          ${docTile('w-icu', '🫁', 'ICU', info.icu, info.icuNote)}
+          ${docTile('w-licu', '🛏', 'LICU', info.licu)}`
+          : `
           ${docTile('w-consult', '🩺', '會診', info.consult, info.consultNote)}
           ${docTile('w-oncall', '🌙', '值班', info.oncall, info.oncallNote)}
           ${docTile('w-icu-med', '🫁', '內ICU', info.icuMed)}
