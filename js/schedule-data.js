@@ -1,9 +1,44 @@
 /* schedule-data.js — 腎臟科班表資料(可同時保留多個月份)
    新增月份時:在 months 加一組 "YYYY-MM",並在 cloud 最前面加對應檔案即可。 */
 window.ScheduleData = {
-  updated: "2026-08-13",
+  updated: "2026-08-31",
   /* 雲端班表清單:新的排前面 */
   cloud: [
+    {
+      title: "腎臟科班表",
+      label: "09月腎臟科6合1班表",
+      month: "2026-09",
+      file: "files/schedule-2026-09.pdf",
+      pages: [
+        "files/schedule-2026-09/p1.jpg", "files/schedule-2026-09/p2.jpg",
+        "files/schedule-2026-09/p3.jpg", "files/schedule-2026-09/p4.jpg",
+        "files/schedule-2026-09/p5.jpg", "files/schedule-2026-09/p6.jpg",
+        "files/schedule-2026-09/p7.jpg"
+      ]
+    },
+    {
+      title: "大內科班表",
+      label: "09月大內科班表",
+      month: "2026-09",
+      file: "files/medicine-2026-09.xlsx",
+      pages: [
+        "files/medicine-2026-09/p1.jpg",
+        "files/medicine-2026-09/p2.jpg",
+        "files/medicine-2026-09/p3.jpg",
+        "files/medicine-2026-09/p4.jpg",
+        "files/medicine-2026-09/p5.jpg",
+        "files/medicine-2026-09/p6.jpg",
+        "files/medicine-2026-09/p7.jpg",
+        "files/medicine-2026-09/p8.jpg",
+        "files/medicine-2026-09/p9.jpg",
+        "files/medicine-2026-09/p10.jpg",
+        "files/medicine-2026-09/p11.jpg",
+        "files/medicine-2026-09/p12.jpg",
+        "files/medicine-2026-09/p13.jpg",
+        "files/medicine-2026-09/p14.jpg",
+        "files/medicine-2026-09/p15.jpg"
+      ]
+    },
     {
       title: "腎臟科班表",
       label: "08月腎臟科6合1班表",
@@ -57,6 +92,139 @@ window.ScheduleData = {
   ],
   /* 各月份資料;App 會依當下日期自動選用對應月份 */
   months: {
+    "2026-09": {   /* 九月 */
+      /* 晨會及科務活動 — 班表第1頁(已排除 CR teaching、12F內科討論室、教學住診/門診/病例迴診) */
+      meetings: {
+        1: [{ time: "07:45-08:30", title: "晨會:Orientation", speaker: "曾珮禎醫師", host: "曾珮禎醫師", place: "3F會議室" }],
+        8: [{ time: "07:30-08:30", title: "科務會議暨防護衣穿脫演練", speaker: "林均叡/李文欽醫師", host: "李文欽醫師", place: "3F會議室" }],
+        10: [{ time: "07:30-08:30", title: "內科晨會-Mortality and Morbidity", speaker: "余秉聰/張恩睿醫師", host: "學術CR-蕭喻心", place: "6F大禮堂" }],
+        16: [{ time: "07:30-08:30", title: "Journal reading-Acute peritoneal dialysis", speaker: "吳振立/鄭本忠醫師", host: "黃富誠醫師/鄭本忠醫師", place: "3F會議室" }],
+        17: [{ time: "07:30-08:30", title: "內科晨會", speaker: "王慧婷醫師", host: "陳永隆主任", place: "6F大禮堂" }],
+        24: [{ time: "11:30-12:30", title: "超長期、14天再入院暨輪訓醫師座談會", speaker: "各輪訓醫師", host: "曾珮禎醫師", place: "3F會議室" }],
+        30: [{ time: "07:30-08:30", title: "Mortality and Morbidity", speaker: "陳彥翰/劉庭均醫師", host: "曾珮禎醫師/劉庭均醫師", place: "3F會議室" }]
+      },
+      vsDuty: {
+        echoAM: {
+          1: "李宜蓉", 2: "王麒翔", 3: "周嘉安", 4: "王劭璿", 7: "邱鼎育", 8: "許淳惟", 9: "吳建興", 10: "周嘉安",
+          11: "蔡凱帆", 14: "陳德全", 15: "王麒翔", 16: "劉庭均", 17: "楊智超", 18: "蔡凱帆", 21: "李宜蓉", 22: "許淳惟",
+          23: "王麒翔", 24: "李文欽", 29: "李宜蓉", 30: "李隆志"
+        },
+        echoPM: {
+          1: "王振宇", 2: "傅崇銘", 3: "賴弘強", 4: "劉志翰", 7: "劉庭均", 8: "黃鏘綺", 9: "郭韋宏", 10: "林均叡",
+          11: "賴弘強", 14: "賴弘強", 15: "王劭璿", 16: "傅崇銘", 17: "林均叡", 18: "劉志翰", 21: "邱千華", 22: "黃鏘綺",
+          23: "王振宇", 24: "鄭本忠", 29: "王劭璿", 30: "王振宇"
+        },
+        health: {
+          1: "林均叡", 2: "李隆志", 3: "周嘉安", 4: "劉庭均", 5: "林均叡", 7: "賴育城", 8: "郭韋宏", 9: "劉志翰",
+          10: "李文欽", 11: "林均叡", 12: "劉志翰", 14: "邱鼎育", 15: "許淳惟", 16: "蔡凱帆", 17: "傅崇銘", 18: "邱千華",
+          19: "郭韋宏", 21: "黃鏘綺", 22: "陳德全", 23: "吳建興", 24: "許淳惟", 26: "李隆志", 29: "劉志翰", 30: "劉庭均"
+        },
+        rounds: {
+          1: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "許淳惟" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "蔡凱帆" }, { shift: "A", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "蔡凱帆" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "吳建興" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "吳建興" }, { shift: "B", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "邱鼎育" }, { shift: "C", region: "A1,A2,A8B1,B2,B3", doctor: "李隆志" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "李隆志" }, { shift: "C", region: "B5,B6,B7,B8,B9H2", doctor: "李隆志" }],
+          2: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "賴弘強" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "蔡凱帆" }, { shift: "A", region: "B5,B6,B7,B8,B9H2", doctor: "賴弘強", f: 1 }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "賴育城" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "許淳惟" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "楊智超" }, { shift: "B", region: "B5,B6,B7,B8,B9H2", doctor: "李文欽" }, { shift: "B", region: "H3,H5,H6,H7,H8,H9", doctor: "楊智超" }, { shift: "C", region: "A1,A2,A8B1,B2,B3", doctor: "王劭璿" }, { shift: "C", region: "B5,B6,B7,B8,B9H2", doctor: "李宜蓉" }],
+          3: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "李宜蓉" }, { shift: "A", region: "A3,A5,A6,A7,A9H1〉和〈B5,B6,B7,B8,B9H2", doctor: "賴弘強" }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "李宜蓉" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "傅崇銘" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "郭韋宏" }, { shift: "B", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "李宜蓉", f: 1 }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "李宜蓉" }],
+          4: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "劉志翰" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "李隆志" }, { shift: "A", region: "B5,B6,B7,B8,B9H2", doctor: "郭韋宏" }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "賴弘強" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "郭韋宏" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "李宜蓉" }, { shift: "B", region: "B5,B6,B7,B8,B9H2", doctor: "蔡凱帆", f: 1 }, { shift: "B", region: "H3,H5,H6,H7,H8,H9", doctor: "蔡凱帆" }, { shift: "C", region: "A1,A2,A8B1,B2,B3", doctor: "劉志翰" }, { shift: "C", region: "B5,B6,B7,B8,B9H2", doctor: "鄭本忠" }],
+          5: [{ shift: "A", region: "A1,A2,A8B1,B2,B3〉和〈A3,A5,A6,A7,A9H1", doctor: "傅崇銘" }, { shift: "A", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "傅崇銘" }, { shift: "B", region: "A1,A2,A8B1,B2,B3〉和〈A3,A5,A6,A7,A9H1", doctor: "林均叡" }, { shift: "B", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "林均叡" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "林均叡" }],
+          7: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "傅崇銘" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "李隆志" }, { shift: "A", region: "B5,B6,B7,B8,B9H2", doctor: "黃鏘綺" }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "賴弘強", f: 1 }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "郭韋宏" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "李宜蓉" }, { shift: "B", region: "B5,B6,B7,B8,B9H2", doctor: "蔡凱帆" }, { shift: "B", region: "H3,H5,H6,H7,H8,H9", doctor: "邱鼎育" }, { shift: "C", region: "A1,A2,A8B1,B2,B3", doctor: "劉庭均" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "林均叡" }, { shift: "C", region: "B5,B6,B7,B8,B9H2", doctor: "王振宇" }],
+          8: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "王劭璿" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "劉志翰" }, { shift: "A", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "賴弘強" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "吳建興" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "許淳惟" }, { shift: "B", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "王劭璿", f: 1 }, { shift: "C", region: "A1238", doctor: "王麒翔" }, { shift: "C", region: "A5679", doctor: "陳德全" }, { shift: "C", region: "B5,B6,B7,B8,B9H2", doctor: "王麒翔" }],
+          9: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "林均叡" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "劉志翰" }, { shift: "A", region: "B5,B6,B7,B8,B9H2", doctor: "陳靖博" }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "賴育城" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "邱鼎育" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "楊智超" }, { shift: "B", region: "B5,B6,B7,B8,B9H2", doctor: "李文欽" }, { shift: "B", region: "H3,H5,H6,H7,H8,H9", doctor: "楊智超" }, { shift: "C", region: "A1,A2,A8B1,B2,B3", doctor: "吳建興" }, { shift: "C", region: "B5,B6,B7,B8,B9H2", doctor: "王振宇" }],
+          10: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "黃鏘綺", f: 1 }, { shift: "A", region: "A3,A5,A6,A7,A9H1〉和〈B5,B6,B7,B8,B9H2", doctor: "傅崇銘" }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "黃鏘綺" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "傅崇銘" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "郭韋宏", f: 1 }, { shift: "B", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "賴弘強" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "周嘉安" }],
+          11: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "許淳惟" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "李隆志" }, { shift: "A", region: "B5,B6,B7,B8,B9H2", doctor: "邱鼎育" }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "賴弘強" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "郭韋宏" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "李宜蓉" }, { shift: "B", region: "B5,B6,B7,B8,B9H2", doctor: "王劭璿" }, { shift: "B", region: "H3,H5,H6,H7,H8,H9", doctor: "劉志翰" }, { shift: "C", region: "A1,A2,A8B1,B2,B3", doctor: "邱千華" }, { shift: "C", region: "B5,B6,B7,B8,B9H2", doctor: "許淳惟" }],
+          12: [{ shift: "A", region: "A1,A2,A8B1,B2,B3〉和〈A3,A5,A6,A7,A9H1", doctor: "王劭璿" }, { shift: "A", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "邱千華" }, { shift: "B", region: "A1,A2,A8B1,B2,B3〉和〈A3,A5,A6,A7,A9H1", doctor: "李宜蓉" }, { shift: "B", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "王劭璿" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "李宜蓉" }],
+          14: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "傅崇銘" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "李隆志" }, { shift: "A", region: "B5,B6,B7,B8,B9H2", doctor: "黃鏘綺" }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "賴育城", f: 1 }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "郭韋宏" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "劉志翰" }, { shift: "B", region: "B5,B6,B7,B8,B9H2", doctor: "劉志翰" }, { shift: "B", region: "H3,H5,H6,H7,H8,H9", doctor: "邱鼎育" }, { shift: "C", region: "A1,A2,A8B1,B2,B3", doctor: "邱鼎育" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "邱鼎育" }, { shift: "C", region: "B5,B6,B7,B8,B9H2", doctor: "王振宇" }],
+          15: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "許淳惟" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "李隆志" }, { shift: "A", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "賴弘強" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "吳建興" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "鄭本忠" }, { shift: "B", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "鄭本忠" }, { shift: "C", region: "A1,A2,A8B1,B2,B3", doctor: "蔡凱帆" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "蔡凱帆" }, { shift: "C", region: "B5,B6,B7,B8,B9H2", doctor: "蔡凱帆" }],
+          16: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "劉志翰" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "劉志翰", f: 1 }, { shift: "A", region: "B5,B6,B7,B8,B9H2", doctor: "王劭璿" }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "賴育城" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "許淳惟" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "楊智超" }, { shift: "B", region: "B5,B6,B7,B8,B9H2", doctor: "李文欽" }, { shift: "B", region: "H3,H5,H6,H7,H8,H9", doctor: "楊智超" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "劉庭均" }, { shift: "C", region: "H3,H5,H6,H7,H8,H9", doctor: "郭韋宏" }],
+          17: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "黃鏘綺" }, { shift: "A", region: "A3,A5,A6,A7,A9H1〉和〈B5,B6,B7,B8,B9H2", doctor: "黃鏘綺" }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "黃鏘綺" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "賴弘強" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "王劭璿" }, { shift: "B", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "賴弘強" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "賴弘強" }],
+          18: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "劉志翰" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "李隆志" }, { shift: "A", region: "B5,B6,B7,B8,B9H2", doctor: "邱鼎育" }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "劉志翰" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "林均叡" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "林均叡" }, { shift: "B", region: "B5,B6,B7,B8,B9H2", doctor: "蔡凱帆" }, { shift: "B", region: "H3,H5,H6,H7,H8,H9", doctor: "蔡凱帆" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "林均叡" }, { shift: "C", region: "H3,H5,H6,H7,H8,H9", doctor: "楊智超" }],
+          19: [{ shift: "A", region: "A1,A2,A8B1,B2,B3〉和〈A3,A5,A6,A7,A9H1", doctor: "劉志翰" }, { shift: "A", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "楊智超" }, { shift: "B", region: "A1,A2,A8B1,B2,B3〉和〈A3,A5,A6,A7,A9H1", doctor: "劉庭均" }, { shift: "B", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "劉志翰" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "劉庭均" }],
+          21: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "傅崇銘" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "劉志翰" }, { shift: "A", region: "B5,B6,B7,B8,B9H2", doctor: "黃鏘綺" }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "賴育城" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "郭韋宏" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "李宜蓉" }, { shift: "B", region: "B5,B6,B7,B8,B9H2", doctor: "林均叡" }, { shift: "B", region: "H3,H5,H6,H7,H8,H9", doctor: "王劭璿" }, { shift: "C", region: "A1,A2,A8B1,B2,B3", doctor: "黃鏘綺" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "黃鏘綺" }, { shift: "C", region: "B5,B6,B7,B8,B9H2", doctor: "許淳惟" }],
+          22: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "李宜蓉" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "傅崇銘" }, { shift: "A", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "王劭璿", f: 1 }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "許淳惟" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "鄭本忠" }, { shift: "B", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "鄭本忠" }, { shift: "C", region: "A1,A2,A8B1,B2,B3", doctor: "賴弘強" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "賴弘強" }, { shift: "C", region: "H3,H5,H6,H7,H8,H9", doctor: "賴弘強" }],
+          23: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "林均叡" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "蔡凱帆" }, { shift: "A", region: "B5,B6,B7,B8,B9H2", doctor: "陳靖博" }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "賴育城" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "許淳惟" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "許淳惟" }, { shift: "B", region: "B5,B6,B7,B8,B9H2", doctor: "李文欽" }, { shift: "B", region: "H3,H5,H6,H7,H8,H9", doctor: "李宜蓉" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "王麒翔" }, { shift: "C", region: "B5,B6,B7,B8,B9H2", doctor: "王振宇" }],
+          24: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "黃鏘綺" }, { shift: "A", region: "A3,A5,A6,A7,A9H1〉和〈B5,B6,B7,B8,B9H2", doctor: "黃鏘綺" }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "黃鏘綺" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "傅崇銘", f: 1 }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "郭韋宏" }, { shift: "B", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "王劭璿" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "王劭璿" }],
+          25: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "許淳惟" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "許淳惟" }, { shift: "A", region: "B5,B6,B7,B8,B9H2", doctor: "郭韋宏" }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "郭韋宏" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "李宜蓉" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "李宜蓉" }, { shift: "B", region: "B5,B6,B7,B8,B9H2", doctor: "王劭璿" }, { shift: "B", region: "H3,H5,H6,H7,H8,H9", doctor: "王劭璿" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "王劭璿" }, { shift: "C", region: "H3,H5,H6,H7,H8,H9", doctor: "李宜蓉" }],
+          26: [{ shift: "A", region: "A1,A2,A8B1,B2,B3〉和〈A3,A5,A6,A7,A9H1", doctor: "王麒翔" }, { shift: "A", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "鄭本忠" }, { shift: "B", region: "A1,A2,A8B1,B2,B3〉和〈A3,A5,A6,A7,A9H1", doctor: "王麒翔" }, { shift: "B", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "賴弘強" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "賴弘強" }],
+          28: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "周嘉安" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "周嘉安" }, { shift: "A", region: "B5,B6,B7,B8,B9H2", doctor: "李隆志" }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "李隆志" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "賴弘強" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "賴弘強" }, { shift: "B", region: "B5,B6,B7,B8,B9H2", doctor: "王麒翔" }, { shift: "B", region: "H3,H5,H6,H7,H8,H9", doctor: "王麒翔" }, { shift: "C", region: "A1,A2,A8B1,B2,B3", doctor: "王麒翔" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "王麒翔" }, { shift: "C", region: "H3,H5,H6,H7,H8,H9", doctor: "賴弘強" }],
+          29: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "許淳惟", f: 1 }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "傅崇銘" }, { shift: "A", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "王劭璿" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "吳建興" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "吳建興" }, { shift: "B", region: "B5,B6,B7,B8,B9H2〉和〈H3,H5,H6,H7,H8,H9", doctor: "鄭本忠" }, { shift: "C", region: "A1,A2,A8B1,B2,B3", doctor: "傅崇銘" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "傅崇銘" }, { shift: "C", region: "H3,H5,H6,H7,H8,H9", doctor: "傅崇銘" }],
+          30: [{ shift: "A", region: "A1,A2,A8B1,B2,B3", doctor: "李宜蓉" }, { shift: "A", region: "A3,A5,A6,A7,A9H1", doctor: "蔡凱帆" }, { shift: "A", region: "B5,B6,B7,B8,B9H2", doctor: "李宜蓉", f: 1 }, { shift: "A", region: "H3,H5,H6,H7,H8,H9", doctor: "王劭璿" }, { shift: "B", region: "A1,A2,A8B1,B2,B3", doctor: "許淳惟" }, { shift: "B", region: "A3,A5,A6,A7,A9H1", doctor: "許淳惟" }, { shift: "B", region: "B5,B6,B7,B8,B9H2", doctor: "王劭璿" }, { shift: "B", region: "H3,H5,H6,H7,H8,H9", doctor: "李宜蓉" }, { shift: "C", region: "A3,A5,A6,A7,A9H1", doctor: "劉志翰" }, { shift: "C", region: "H3,H5,H6,H7,H8,H9", doctor: "黃鏘綺" }]
+        }
+      },
+      consult: {
+        1: "許淳惟", 2: "王振宇", 3: "林均叡", 4: "傅崇銘", 7: "王劭璿", 8: "劉庭均", 9: "王麒翔", 10: "黃鏘綺",
+        11: "周嘉安", 14: "蔡凱帆", 15: "傅崇銘", 16: "賴弘強", 17: "周嘉安", 18: "王振宇", 21: "蔡凱帆", 22: "劉志翰",
+        23: "劉庭均", 24: "郭韋宏", 29: "許淳惟", 30: "劉志翰"
+      },
+      oncallB: {
+        1: "王振宇", 2: "王劭璿", 3: "李宜蓉", 4: "劉志翰", 5: "李宜蓉", 6: "周嘉安", 7: "賴弘強", 8: "王麒翔",
+        9: "王振宇", 10: "賴弘強", 11: "蔡凱帆", 12: "王麒翔", 13: "許淳惟", 14: "王振宇", 15: "賴弘強", 16: "劉庭均",
+        17: "賴弘強", 18: "林均叡", 19: "劉庭均", 20: "王振宇", 21: "劉庭均", 22: "王劭璿", 23: "王麒翔", 24: "王麒翔",
+        25: "李宜蓉", 26: "賴弘強", 27: "林均叡", 28: "王劭璿", 29: "傅崇銘", 30: "許淳惟"
+      },
+      icuMed:  [],
+      icuSurg: [],
+      cover: {
+        1: [{ off: "余晧維(AM)", by: "陳彥翰" }, { off: "方介垚(PM)", by: "吳振立" }],
+        2: [{ off: "王湘綾(AM)", by: "施若琪" }],
+        3: [{ off: "王致剴(AM)", by: "吳振立" }],
+        4: [{ off: "吳振立(AM)", by: "王致剴" }, { off: "方介垚(PM)", by: "王湘綾" }],
+        7: [{ off: "施若琪(Off)", by: "王湘綾" }, { off: "余晧維(AM)", by: "陳彥翰" }, { off: "吳振立(AM)", by: "王致剴" }],
+        8: [{ off: "陳彥翰(AM)", by: "余晧維" }],
+        9: [{ off: "施若琪(Off)", by: "王湘綾" }],
+        10: [{ off: "王湘綾(AM)", by: "施若琪" }],
+        11: [{ off: "王致剴(AM)", by: "吳振立" }, { off: "陳彥翰(AM)", by: "余晧維" }, { off: "方介垚(PM)", by: "王湘綾" }],
+        14: [{ off: "施若琪(Off)", by: "王湘綾" }, { off: "方介垚(PM)", by: "王致剴" }, { off: "王致剴(AM 模擬醫學訓練工作坊)", by: "吳振立" }, { off: "余晧維(PM 模擬醫學訓練工作坊)", by: "陳彥翰" }],
+        15: [{ off: "王湘綾(AM)", by: "施若琪" }, { off: "王致剴(AM)", by: "吳振立" }],
+        16: [{ off: "陳彥翰(AM)", by: "余晧維" }],
+        17: [{ off: "王湘綾(ACLS)", by: "施若琪" }, { off: "吳振立(AM)", by: "王致剴" }, { off: "陳彥翰(ACLS)", by: "余晧維" }, { off: "葉詠潔(PM)", by: "余晧維" }],
+        18: [{ off: "吳振立(國定假日值班補休)", by: "王致剴" }, { off: "王湘綾(ACLS)", by: "施若琪" }, { off: "余晧維(AM)", by: "葉詠潔" }, { off: "陳彥翰(ACLS)", by: "葉詠潔" }],
+        21: [{ off: "王致剴(天災停班日值班補休)", by: "吳振立" }, { off: "王湘綾(特休)", by: "施若琪" }, { off: "陳彥翰(AM)", by: "葉詠潔" }, { off: "余晧維(AM)", by: "葉詠潔" }],
+        22: [{ off: "施若琪(Off)", by: "王湘綾" }, { off: "吳振立(AM)", by: "王致剴" }],
+        24: [{ off: "陳彥翰(特休)", by: "余晧維" }],
+        29: [{ off: "葉詠潔(PM)", by: "陳彥翰" }],
+        30: [{ off: "余晧維(AM)", by: "陳彥翰" }, { off: "吳振立(AM)", by: "王致剴" }]
+      },
+      directory: [
+        { name: "簡玉樹", code: "1271", phone: "56066" },
+        { name: "陳靖博", code: "1464", phone: "56061" },
+        { name: "李建德", code: "4005", phone: "56067" },
+        { name: "李志雄", code: "4228", phone: "56068" },
+        { name: "李文欽", code: "4580", phone: "56140" },
+        { name: "鄭本忠", code: "4620", phone: "56817" },
+        { name: "陳德全", code: "4671", phone: "56075" },
+        { name: "楊智超", code: "4806", phone: "56081" },
+        { name: "吳建興", code: "4802", phone: "56082" },
+        { name: "李隆志", code: "5239", phone: "56083" },
+        { name: "邱鼎育", code: "6284", phone: "56877" },
+        { name: "邱千華", code: "6367", phone: "56457" },
+        { name: "李岳庭", code: "6322", phone: "56284" },
+        { name: "郭韋宏", code: "6489", phone: "56045" },
+        { name: "賴育城", code: "6655", phone: "56135" },
+        { name: "黃鏘綺", code: "6646", phone: "56080" },
+        { name: "傅崇銘", code: "7978", phone: "66032" },
+        { name: "周嘉安", code: "6734", phone: "56813" },
+        { name: "王○一", code: "9101", phone: "69283" },
+        { name: "蔡凱帆", code: "9042", phone: "68814" },
+        { name: "吳柏融", code: "9043", phone: "68824" },
+        { name: "許淳惟", code: "5827", phone: "30370" },
+        { name: "梁鴻華", code: "6949", phone: "30350" },
+        { name: "劉志翰", code: "9339", phone: "56319" },
+        { name: "陳興暐", code: "9559", phone: "56002" },
+        { name: "劉庭均", code: "1550", phone: "35828" },
+        { name: "郭柏彥", code: "9674", phone: "56808" },
+        { name: "林均叡", code: "9734", phone: "56795" },
+        { name: "陳幸祐", code: "9874", phone: "69109" },
+        { name: "蕭啓安", code: "J050", phone: "53865" },
+        { name: "王振宇", code: "J147", phone: "10803" },
+        { name: "王麒翔", code: "J148", phone: "10806" },
+        { name: "賴弘強", code: "9916", phone: "56509" },
+        { name: "王韋婷", code: "J001", phone: "69167" },
+        { name: "李宜蓉", code: "J007", phone: "69173" },
+        { name: "王劭璿", code: "J089", phone: "69150" },
+        { name: "郭坤宙", code: "J109", phone: "39793" },
+        { name: "許瑞廷", code: "J193", phone: "10683" },
+        { name: "曾珮禎", code: "J358", phone: "31516" },
+        { name: "黃富誠", code: "E106", phone: "10358" }
+      ]
+    },
     "2026-08": {   /* 八月 */
       /* 晨會及科務活動 — 班表第1頁(已排除 CR teaching、12F內科討論室、教學住診/門診/病例迴診) */
       meetings: {
