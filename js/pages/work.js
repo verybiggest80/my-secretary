@@ -1,4 +1,4 @@
-/* work.js — Work 分頁:當日會診/值班/內外ICU + 醫師通訊錄 + 班表檔案 + CRRT FF 計算器 */
+/* work.js — 會診分頁:當日會診/值班/內外ICU + 醫師通訊錄 + 班表檔案 + CRRT FF 計算器 */
 window.Pages.work = (function () {
   const ls = window.Store.ls;
   const fileStore = window.Store.fileStore;
@@ -171,7 +171,7 @@ window.Pages.work = (function () {
     div.querySelector('button').addEventListener('click', handler);
     return div;
   }
-  function backRow() { return backRowTo('← Work', renderMenu); }
+  function backRow() { return backRowTo('← 會診', renderMenu); }
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
