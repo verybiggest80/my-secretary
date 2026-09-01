@@ -311,9 +311,16 @@ window.Pages.work = (function () {
   }
 
   /* ---------- 帳密檔案(只存在本機瀏覽器,不會上傳到網站) ---------- */
+  let credUrls = [];
+  function releaseCredUrls() {
+    credUrls.forEach((u) => { try { URL.revokeObjectURL(u); } catch (e) {} });
+    credUrls = [];
+  }
+
   function renderCreds() {
+    releaseCredUrls();
     root.innerHTML = '';
-    root.appendChild(backRowTo('← 班表', renderSchedule));
+    root.appendChild(backRowTo('← 班表', () => { releaseCredUrls(); renderSchedule(); }));
 
     const card = document.createElement('div');
     card.className = 'work-card';
@@ -323,7 +330,7 @@ window.Pages.work = (function () {
         換手機或清除瀏覽器資料就會消失,請自行留存備份。
       </div>
       <div id="cr-body">載入中…</div>
-      <input id="cr-file" type="file" class="hidden">
+      <input id="cr-file" type="file" accept="image/*,application/pdf" class="hidden">
       <button id="cr-upload" class="btn-primary">上傳檔案</button>`;
     root.appendChild(card);
 
@@ -336,27 +343,40 @@ window.Pages.work = (function () {
         body.innerHTML = '<div class="empty-hint" style="padding:16px 0">尚未上傳檔案</div>';
         return;
       }
-      body.innerHTML = `<ul class="history-list">
-        ${files.map((f) => `
-          <li>
-            <span class="h-name">${esc(f.name)}<br><small style="color:var(--text-2)">${new Date(f.date).toLocaleDateString('zh-TW')}</small></span>
-            <button class="h-open" data-id="${f.id}">開啟</button>
-            <button class="h-del" data-id="${f.id}">✕</button>
-          </li>`).join('')}
-      </ul>`;
-      body.querySelectorAll('.h-open').forEach((b) =>
-        b.addEventListener('click', async () => {
-          const rec = await fileStore.get(Number(b.dataset.id));
-          if (!rec) return;
-          const url = URL.createObjectURL(rec.blob);
-          window.open(url, '_blank');
-          setTimeout(() => URL.revokeObjectURL(url), 60000);
-        }));
-      body.querySelectorAll('.h-del').forEach((b) =>
-        b.addEventListener('click', async () => {
-          await fileStore.remove(Number(b.dataset.id));
+      releaseCredUrls();
+      body.innerHTML = '<div class="cr-grid"></div>';
+      const grid = body.querySelector('.cr-grid');
+
+      files.forEach((f) => {
+        const url = URL.createObjectURL(f.blob);
+        credUrls.push(url);
+        const isImg = /^image\//.test(f.type || '');
+        const cell = document.createElement('div');
+        cell.className = 'cr-cell';
+        cell.innerHTML = `
+          <div class="cr-thumb">${isImg
+            ? `<img src="${url}" alt="${esc(f.name)}">`
+            : '<span class="cr-pdf">📄<br>PDF</span>'}</div>
+          <div class="cr-name">${esc(f.name)}</div>
+          <button class="cr-del" data-id="${f.id}" aria-label="刪除">✕</button>`;
+        cell.querySelector('.cr-thumb').addEventListener('click', () => {
+          if (isImg) {
+            imageViewer({
+              backLabel: '帳密', onBack: renderCreds,
+              srcs: [url], label: f.name,
+              fileUrl: url, fileName: f.name, fileLabel: '下載 / 用其他 App 開啟'
+            });
+          } else {
+            renderPdfViewer(f, url);
+          }
+        });
+        cell.querySelector('.cr-del').addEventListener('click', async (e) => {
+          e.stopPropagation();
+          await fileStore.remove(Number(f.id));
           refresh();
-        }));
+        });
+        grid.appendChild(cell);
+      });
     }
 
     card.querySelector('#cr-upload').addEventListener('click', () => fileInput.click());
@@ -375,17 +395,33 @@ window.Pages.work = (function () {
     window.scrollTo(0, 0);
   }
 
-  /* ---------- 雲端班表閱覽器(App 內開啟,含返回鍵、自由縮放) ---------- */
-  function renderCloudViewer(entry) {
+  /* PDF:App 內以 iframe 預覽,另提供以其他 App 開啟 */
+  function renderPdfViewer(f, url) {
     root.innerHTML = '';
+    root.appendChild(backRowTo('← 帳密', renderCreds));
+    const card = document.createElement('div');
+    card.className = 'work-card';
+    card.innerHTML = `<h2>📄 ${esc(f.name)}</h2>
+      <iframe class="cr-pdfview" src="${url}" title="${esc(f.name)}"></iframe>`;
+    root.appendChild(card);
+    const a = document.createElement('a');
+    a.className = 'btn-secondary';
+    a.style.cssText = 'display:block;text-align:center;text-decoration:none';
+    a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.download = f.name;
+    a.textContent = '下載 / 用其他 App 開啟';
+    root.appendChild(a);
+    window.scrollTo(0, 0);
+  }
 
+  /* 通用縮放檢視器:給一組圖片網址,支援 ＋/− 與雙指開合 */
+  function imageViewer(opts) {
+    root.innerHTML = '';
     const back = document.createElement('div');
     back.className = 'back-row';
-    back.innerHTML = `<button class="back-btn">← 班表</button>`;
-    back.querySelector('button').addEventListener('click', renderSchedule);
+    back.innerHTML = `<button class="back-btn">← ${esc(opts.backLabel || '返回')}</button>`;
+    back.querySelector('button').addEventListener('click', opts.onBack);
     root.appendChild(back);
 
-    /* 縮放工具列 */
     const bar = document.createElement('div');
     bar.className = 'zoom-bar';
     bar.innerHTML = `
@@ -399,24 +435,23 @@ window.Pages.work = (function () {
     scroll.className = 'zoom-scroll';
     const inner = document.createElement('div');
     inner.className = 'zoom-inner';
-    const pages = entry.pages || [];
-    inner.innerHTML =
-      pages.map((p, i) => `<img src="${esc(p)}" alt="${esc(entry.label)}第${i + 1}頁" loading="lazy">`).join('');
+    inner.innerHTML = (opts.srcs || [])
+      .map((src, i) => `<img src="${esc(src)}" alt="${esc(opts.label || '')}第${i + 1}頁" loading="lazy">`).join('');
     scroll.appendChild(inner);
     root.appendChild(scroll);
 
-    if (entry.file) {
+    if (opts.fileUrl) {
       const dl = document.createElement('a');
       dl.className = 'btn-secondary';
       dl.style.cssText = 'display:block;text-align:center;text-decoration:none';
-      dl.href = entry.file;
+      dl.href = opts.fileUrl;
       dl.target = '_blank';
       dl.rel = 'noopener';
-      dl.textContent = '下載原始檔案';
+      if (opts.fileName) dl.download = opts.fileName;
+      dl.textContent = opts.fileLabel || '下載原始檔案';
       root.appendChild(dl);
     }
 
-    /* 縮放:＋/−按鈕 + 雙指開合手勢,放大後可左右拖曳 */
     let zoom = 1;
     const setZoom = (z) => {
       zoom = Math.min(6, Math.max(1, z));
@@ -441,6 +476,15 @@ window.Pages.work = (function () {
     scroll.addEventListener('touchend', () => { pinchStart = 0; });
 
     window.scrollTo(0, 0);
+  }
+
+  /* ---------- 雲端班表閱覽器 ---------- */
+  function renderCloudViewer(entry) {
+    imageViewer({
+      backLabel: '班表', onBack: renderSchedule,
+      srcs: entry.pages || [], label: entry.label,
+      fileUrl: entry.file, fileLabel: '下載原始檔案'
+    });
   }
 
   /* ---------- 臨床幫手(子選單) ---------- */
