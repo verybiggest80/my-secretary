@@ -344,38 +344,42 @@ window.Pages.work = (function () {
         return;
       }
       releaseCredUrls();
-      body.innerHTML = '<div class="cr-grid"></div>';
-      const grid = body.querySelector('.cr-grid');
+      body.innerHTML = '<div class="cr-list"></div>';
+      const list = body.querySelector('.cr-list');
 
-      files.forEach((f) => {
+      /* 先建立所有網址,圖片另組成相簿供左右滑切換 */
+      const rows = files.map((f) => {
         const url = URL.createObjectURL(f.blob);
         credUrls.push(url);
-        const isImg = /^image\//.test(f.type || '');
+        return { f, url, isImg: /^image\//.test(f.type || '') };
+      });
+      const gallery = rows.filter((r) => r.isImg).map((r) => ({ src: r.url, name: r.f.name, url: r.url }));
+      const openGallery = (i) => imageViewer({
+        backLabel: '帳密', onBack: renderCreds,
+        srcs: [gallery[i].src], label: gallery[i].name,
+        gallery, index: i, onIndex: openGallery,
+        fileUrl: gallery[i].url, fileName: gallery[i].name, fileLabel: '下載 / 用其他 App 開啟'
+      });
+
+      rows.forEach((r) => {
         const cell = document.createElement('div');
         cell.className = 'cr-cell';
         cell.innerHTML = `
-          <div class="cr-thumb">${isImg
-            ? `<img src="${url}" alt="${esc(f.name)}">`
+          <div class="cr-big">${r.isImg
+            ? `<img src="${r.url}" alt="${esc(r.f.name)}">`
             : '<span class="cr-pdf">📄<br>PDF</span>'}</div>
-          <div class="cr-name">${esc(f.name)}</div>
-          <button class="cr-del" data-id="${f.id}" aria-label="刪除">✕</button>`;
-        cell.querySelector('.cr-thumb').addEventListener('click', () => {
-          if (isImg) {
-            imageViewer({
-              backLabel: '帳密', onBack: renderCreds,
-              srcs: [url], label: f.name,
-              fileUrl: url, fileName: f.name, fileLabel: '下載 / 用其他 App 開啟'
-            });
-          } else {
-            renderPdfViewer(f, url);
-          }
+          <div class="cr-name">${esc(r.f.name)}</div>
+          <button class="cr-del" data-id="${r.f.id}" aria-label="刪除">✕</button>`;
+        cell.querySelector('.cr-big').addEventListener('click', () => {
+          if (r.isImg) openGallery(gallery.findIndex((g) => g.url === r.url));
+          else renderPdfViewer(r.f, r.url);
         });
         cell.querySelector('.cr-del').addEventListener('click', async (e) => {
           e.stopPropagation();
-          await fileStore.remove(Number(f.id));
+          await fileStore.remove(Number(r.f.id));
           refresh();
         });
-        grid.appendChild(cell);
+        list.appendChild(cell);
       });
     }
 
@@ -431,6 +435,22 @@ window.Pages.work = (function () {
       <button id="z-reset">重設</button>`;
     root.appendChild(bar);
 
+    const gal = opts.gallery || null;
+    const gi = opts.index || 0;
+    if (gal) {
+      const nav = document.createElement('div');
+      nav.className = 'gal-nav';
+      nav.innerHTML = `
+        <button id="g-prev" ${gi === 0 ? 'disabled' : ''} aria-label="上一張">‹</button>
+        <span class="gal-info">${gi + 1} / ${gal.length}　${esc(gal[gi].name)}</span>
+        <button id="g-next" ${gi === gal.length - 1 ? 'disabled' : ''} aria-label="下一張">›</button>`;
+      root.appendChild(nav);
+      const go = (i) => { if (i >= 0 && i < gal.length) opts.onIndex(i); };
+      nav.querySelector('#g-prev').addEventListener('click', () => go(gi - 1));
+      nav.querySelector('#g-next').addEventListener('click', () => go(gi + 1));
+      opts.go = go;
+    }
+
     const scroll = document.createElement('div');
     scroll.className = 'zoom-scroll';
     const inner = document.createElement('div');
@@ -474,6 +494,21 @@ window.Pages.work = (function () {
       }
     }, { passive: false });
     scroll.addEventListener('touchend', () => { pinchStart = 0; });
+
+    /* 相簿模式:未放大時左右滑動切換圖片 */
+    if (gal) {
+      let sx = 0, sy = 0, single = false;
+      scroll.addEventListener('touchstart', (e) => {
+        single = e.touches.length === 1;
+        if (single) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }
+      }, { passive: true });
+      scroll.addEventListener('touchend', (e) => {
+        if (!single || zoom !== 1 || !e.changedTouches.length) return;
+        const dx = e.changedTouches[0].clientX - sx;
+        const dy = e.changedTouches[0].clientY - sy;
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) opts.go(gi + (dx < 0 ? 1 : -1));
+      }, { passive: true });
+    }
 
     window.scrollTo(0, 0);
   }
