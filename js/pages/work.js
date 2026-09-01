@@ -41,6 +41,28 @@ window.Pages.work = (function () {
       }));
     return out;
   }
+  /* 區域字串:原表格換行處會缺逗號(A1,A2,A8B1,B2,B3)→ 補成 A1,A2,A8,B1,B2,B3 */
+  const fixRegion = (x) => String(x).replace(/(\d)([A-Za-z])/g, '$1,$2');
+
+  /* 復大查房:當日依班別彙整「誰負責哪一格」,同班別同醫師的多格合併 */
+  function roundZones(md, day) {
+    const list = (md && md.vsDuty && md.vsDuty.rounds && md.vsDuty.rounds[day]) || [];
+    const shifts = [];
+    list.forEach((r) => {
+      let sh = shifts.find((x) => x.shift === r.shift);
+      if (!sh) { sh = { shift: r.shift, docs: [] }; shifts.push(sh); }
+      /* 同醫師但「代查/非代查」要分開列,否則標記會套到不該套的格子 */
+      const fg = !!r.f;
+      let dc = sh.docs.find((x) => x.name === r.doctor && x.f === fg);
+      if (!dc) { dc = { name: r.doctor, regions: [], f: fg }; sh.docs.push(dc); }
+      String(r.region).split('〉和〈').map(fixRegion).forEach((g) => {
+        if (!dc.regions.includes(g)) dc.regions.push(g);
+      });
+    });
+    shifts.sort((a, b) => a.shift.localeCompare(b.shift));
+    return shifts;
+  }
+
   function findDoc(name, md) {
     if (!name) return { name: '—', code: '—', phone: '—' };
     const list = (md && md.directory) || allDirectory();
@@ -213,6 +235,24 @@ window.Pages.work = (function () {
   function renderSchedule() {
     root.innerHTML = '';
     root.appendChild(backRow());
+
+    /* 復大分區:當日血液透析室主治醫師查房分區 */
+    const now = new Date();
+    const md = monthData(now);
+    const zones = roundZones(md, now.getDate());
+    const zc = document.createElement('div');
+    zc.className = 'work-card';
+    zc.innerHTML = `<h2>🏥 復大分區<span style="font-weight:400;color:var(--text-2);font-size:.85rem"> ${now.getMonth() + 1}/${now.getDate()}</span></h2>` +
+      (zones.length
+        ? zones.map((s2) => `
+          <div class="section-label" style="margin:12px 0 6px">${esc(s2.shift)} 班</div>
+          ${s2.docs.map((d2) => `
+            <div class="rz-row">
+              <span class="rz-name">${esc(d2.name)}</span>${d2.f ? '<span class="rz-f">代查</span>' : ''}
+              <span class="rz-reg">〈${d2.regions.map(esc).join('〉和〈')}〉</span>
+            </div>`).join('')}`).join('')
+        : `<div class="empty-hint" style="padding:12px 0">${md ? '今天沒有復大查房' : '本月班表尚未更新'}</div>`);
+    root.appendChild(zc);
 
     /* 雲端班表:隨網站部署,所有裝置皆可開啟(每個檔案一張卡片) */
     const SD = window.ScheduleData;
