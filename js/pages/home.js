@@ -125,7 +125,7 @@ window.Pages.home = (function () {
           const msgs = [];
           mineRounds.forEach((r) => {
             const regs = String(r.region).split('〉和〈').map(fixRegion).map(esc).join('〉和〈');
-            msgs.push(`<div class="cover-msg">你${word}要代查喔! 區域是 <b>${esc(r.shift)}班</b>〈${regs}〉</div>`);
+            msgs.push(`<div class="cover-msg">你${word}要代查喔! 區域是 <b>${esc(r.shift)}班</b>〈${regs}〉 <b>${esc(r.doctor)}</b></div>`);
           });
           if (helpConsult) msgs.push(`<div class="cover-msg">你${word}要幫忙會診喔!</div>`);
           if (mine.length) msgs.push(`<div class="cover-msg">你${word}要Cover${mine.map((m) => esc(m.off)).join('、')}喔! 辛苦了!</div>`);
