@@ -125,6 +125,11 @@ window.ScheduleData = {
         { from: 1,  to: 15, name: "王韋婷" },
         { from: 16, to: 30, name: "許瑞廷" }
       ],
+      /* 當月負責代查復大查房(班表日期前有 F)的總醫師 */
+      roundHelper: [
+        { from: 1,  to: 15, name: "許瑞廷" },
+        { from: 16, to: 30, name: "郭坤宙" }
+      ],
       cover: {
         1: [{ off: "余晧維(AM)", by: "陳彥翰" }, { off: "方介垚(PM)", by: "吳振立" }],
         2: [{ off: "王湘綾(AM)", by: "施若琪" }],

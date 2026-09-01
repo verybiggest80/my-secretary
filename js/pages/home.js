@@ -2,6 +2,9 @@
 window.Pages.home = (function () {
   const ls = window.Store.ls;
 
+  /* 區域字串:原表格換行處會缺逗號(A1,A2,A8B1,B2,B3)→ 補成 A1,A2,A8,B1,B2,B3 */
+  const fixRegion = (x) => String(x).replace(/(\d)([A-Za-z])/g, '$1,$2');
+
   const DEFAULT_TILES = [
     { id: 'date', size: 'bar' },
     { id: 'todo', size: 'bar' },
@@ -113,7 +116,17 @@ window.Pages.home = (function () {
           const hp = (md.consultHelper || []).find((r) => day >= r.from && day <= r.to);
           const helpConsult = (md.consultF || []).indexOf(day) >= 0 && !!hp &&
             (hp.name.includes(q) || q.includes(hp.name));
+          /* 復大查房日期前有 F → 當期負責的總醫師要代查 */
+          const rh = (md.roundHelper || []).find((r) => day >= r.from && day <= r.to);
+          const mineRounds = (!!rh && (rh.name.includes(q) || q.includes(rh.name)))
+            ? (((md.vsDuty && md.vsDuty.rounds && md.vsDuty.rounds[day]) || []).filter((r) => r.f))
+            : [];
+
           const msgs = [];
+          mineRounds.forEach((r) => {
+            const regs = String(r.region).split('〉和〈').map(fixRegion).map(esc).join('〉和〈');
+            msgs.push(`<div class="cover-msg">你${word}要代查喔! 區域是 <b>${esc(r.shift)}班</b>〈${regs}〉</div>`);
+          });
           if (helpConsult) msgs.push(`<div class="cover-msg">你${word}要幫忙會診喔!</div>`);
           if (mine.length) msgs.push(`<div class="cover-msg">你${word}要Cover${mine.map((m) => esc(m.off)).join('、')}喔! 辛苦了!</div>`);
           if (!msgs.length) msgs.push(`<div class="cover-msg">${word}不用Cover別人，舒服!</div>`);
