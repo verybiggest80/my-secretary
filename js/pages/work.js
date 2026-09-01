@@ -44,6 +44,8 @@ window.Pages.work = (function () {
   /* 區域字串:原表格換行處會缺逗號(A1,A2,A8B1,B2,B3)→ 補成 A1,A2,A8,B1,B2,B3 */
   const fixRegion = (x) => String(x).replace(/(\d)([A-Za-z])/g, '$1,$2');
 
+  let zoneTomorrow = false;   /* 復大分區卡片:false=今天, true=明天 */
+
   /* 區域代號依開頭字母(A/B/H)分色 */
   function zoneHtml(group) {
     return String(group).split(',').map((code) => {
@@ -246,13 +248,15 @@ window.Pages.work = (function () {
     root.innerHTML = '';
     root.appendChild(backRow());
 
-    /* 復大分區:當日血液透析室主治醫師查房分區 */
-    const now = new Date();
-    const md = monthData(now);
-    const zones = roundZones(md, now.getDate());
+    /* 復大分區:血液透析室主治醫師查房分區(可切換今天/明天) */
+    const target = new Date();
+    if (zoneTomorrow) target.setDate(target.getDate() + 1);
+    const zWord = zoneTomorrow ? '明天' : '今天';
+    const md = monthData(target);
+    const zones = roundZones(md, target.getDate());
     const zc = document.createElement('div');
     zc.className = 'work-card';
-    zc.innerHTML = `<h2>🏥 復大分區<span style="font-weight:400;color:var(--text-2);font-size:.85rem"> ${now.getMonth() + 1}/${now.getDate()}</span></h2>` +
+    zc.innerHTML = `<h2>🏥 復大分區<span style="font-weight:400;color:var(--text-2);font-size:.85rem"> ${target.getMonth() + 1}/${target.getDate()}</span></h2>` +
       (zones.length
         ? zones.map((s2) => `
           <div class="section-label" style="margin:12px 0 6px">${esc(s2.shift)} 班</div>
@@ -261,7 +265,13 @@ window.Pages.work = (function () {
               <span class="rz-name">${esc(d2.name)}</span>${d2.f ? '<span class="rz-f">代查</span>' : ''}
               <span class="rz-reg">〈${d2.regions.map(zoneHtml).join('〉和〈')}〉</span>
             </div>`).join('')}`).join('')
-        : `<div class="empty-hint" style="padding:12px 0">${md ? '今天沒有復大查房' : '本月班表尚未更新'}</div>`);
+        : `<div class="empty-hint" style="padding:12px 0">${md ? zWord + '沒有復大查房' : ymOf(target) + ' 班表尚未更新'}</div>`);
+    zc.insertAdjacentHTML('beforeend',
+      `<button id="rz-toggle" class="cover-btn">${zoneTomorrow ? '回到今天' : '看看明天'}</button>`);
+    zc.querySelector('#rz-toggle').addEventListener('click', () => {
+      zoneTomorrow = !zoneTomorrow;
+      renderSchedule();
+    });
     root.appendChild(zc);
 
     /* 雲端班表:隨網站部署,所有裝置皆可開啟(每個檔案一張卡片) */
@@ -1214,6 +1224,7 @@ window.Pages.work = (function () {
     init(el) { root = el; },
     show(subview) {
       ensureData(() => {
+        zoneTomorrow = false;
         if (subview === 'schedule') renderSchedule();
         else if (subview === 'crrt') renderCRRT();
         else if (subview === 'directory') renderDirectory();
