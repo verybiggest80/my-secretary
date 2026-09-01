@@ -44,6 +44,8 @@ window.Pages.work = (function () {
   /* 區域字串:原表格換行處會缺逗號(A1,A2,A8B1,B2,B3)→ 補成 A1,A2,A8,B1,B2,B3 */
   const fixRegion = (x) => String(x).replace(/(\d)([A-Za-z])/g, '$1,$2');
 
+  const fileStore = window.Store.fileStore;
+
   let zoneTomorrow = false;   /* 復大分區卡片:false=今天, true=明天 */
 
   /* 區域代號依開頭字母(A/B/H)分色 */
@@ -267,11 +269,15 @@ window.Pages.work = (function () {
             </div>`).join('')}`).join('')
         : `<div class="empty-hint" style="padding:12px 0">${md ? zWord + '沒有復大查房' : ymOf(target) + ' 班表尚未更新'}</div>`);
     zc.insertAdjacentHTML('beforeend',
-      `<button id="rz-toggle" class="cover-btn">${zoneTomorrow ? '回到今天' : '看看明天'}</button>`);
+      `<div class="rz-btns">
+         <button id="rz-toggle" class="cover-btn">${zoneTomorrow ? '回到今天' : '看看明天'}</button>
+         <button id="rz-creds" class="cover-btn">看看帳密</button>
+       </div>`);
     zc.querySelector('#rz-toggle').addEventListener('click', () => {
       zoneTomorrow = !zoneTomorrow;
       renderSchedule();
     });
+    zc.querySelector('#rz-creds').addEventListener('click', renderCreds);
     root.appendChild(zc);
 
     /* 雲端班表:隨網站部署,所有裝置皆可開啟(每個檔案一張卡片) */
@@ -302,6 +308,71 @@ window.Pages.work = (function () {
       root.appendChild(cloud);
     });
 
+  }
+
+  /* ---------- 帳密檔案(只存在本機瀏覽器,不會上傳到網站) ---------- */
+  function renderCreds() {
+    root.innerHTML = '';
+    root.appendChild(backRowTo('← 班表', renderSchedule));
+
+    const card = document.createElement('div');
+    card.className = 'work-card';
+    card.innerHTML = `<h2>🔑 帳密</h2>
+      <div class="tile-sub" style="color:var(--text-2);font-size:.8rem;line-height:1.6;margin-bottom:10px">
+        檔案只儲存在這台裝置的瀏覽器裡,不會上傳到網站或雲端。<br>
+        換手機或清除瀏覽器資料就會消失,請自行留存備份。
+      </div>
+      <div id="cr-body">載入中…</div>
+      <input id="cr-file" type="file" class="hidden">
+      <button id="cr-upload" class="btn-primary">上傳檔案</button>`;
+    root.appendChild(card);
+
+    const body = card.querySelector('#cr-body');
+    const fileInput = card.querySelector('#cr-file');
+
+    async function refresh() {
+      const files = await fileStore.listMeta('creds');
+      if (!files.length) {
+        body.innerHTML = '<div class="empty-hint" style="padding:16px 0">尚未上傳檔案</div>';
+        return;
+      }
+      body.innerHTML = `<ul class="history-list">
+        ${files.map((f) => `
+          <li>
+            <span class="h-name">${esc(f.name)}<br><small style="color:var(--text-2)">${new Date(f.date).toLocaleDateString('zh-TW')}</small></span>
+            <button class="h-open" data-id="${f.id}">開啟</button>
+            <button class="h-del" data-id="${f.id}">✕</button>
+          </li>`).join('')}
+      </ul>`;
+      body.querySelectorAll('.h-open').forEach((b) =>
+        b.addEventListener('click', async () => {
+          const rec = await fileStore.get(Number(b.dataset.id));
+          if (!rec) return;
+          const url = URL.createObjectURL(rec.blob);
+          window.open(url, '_blank');
+          setTimeout(() => URL.revokeObjectURL(url), 60000);
+        }));
+      body.querySelectorAll('.h-del').forEach((b) =>
+        b.addEventListener('click', async () => {
+          await fileStore.remove(Number(b.dataset.id));
+          refresh();
+        }));
+    }
+
+    card.querySelector('#cr-upload').addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', async () => {
+      const f = fileInput.files[0];
+      if (!f) return;
+      await fileStore.add({ category: 'creds', name: f.name, type: f.type, blob: f, date: Date.now() });
+      fileInput.value = '';
+      refresh();
+    });
+
+    /* 瀏覽器停用 IndexedDB(如無痕模式)時不要卡在「載入中」 */
+    refresh().catch(() => {
+      body.innerHTML = '<div class="empty-hint" style="padding:16px 0">此瀏覽器無法使用本機儲存(可能是無痕模式)</div>';
+    });
+    window.scrollTo(0, 0);
   }
 
   /* ---------- 雲端班表閱覽器(App 內開啟,含返回鍵、自由縮放) ---------- */

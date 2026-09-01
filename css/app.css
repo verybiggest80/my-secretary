@@ -475,3 +475,5 @@ body {
 .rz-reg .z-h { color: var(--zone-h); font-weight: 600; }
 .rz-f { font-size: .68rem; color: var(--warn); border: 1px solid var(--warn); border-radius: 6px; padding: 0 4px; flex: 0 0 auto; }
 .rz-reg { font-size: .85rem; color: var(--text-2); }
+.rz-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.rz-btns .cover-btn { margin-top: 0; }
