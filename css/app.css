@@ -463,7 +463,8 @@ body {
 
 /* ===== 復大分區(班表頁) ===== */
 .rz-row { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; padding: 4px 0; line-height: 1.5; }
-.rz-name { font-weight: 700; color: var(--accent); flex: 0 0 auto; }
+/* 姓名用一般文字色:深色模式為白色,淺色模式仍可讀 */
+.rz-name { font-weight: 700; color: var(--text); flex: 0 0 auto; }
 /* 區域代號依 A / B / H 區分色 */
 :root { --zone-a: #0e7490; --zone-b: #b45309; --zone-h: #6d28d9; }
 @media (prefers-color-scheme: dark) {
