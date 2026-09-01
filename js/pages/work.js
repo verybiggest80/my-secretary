@@ -44,6 +44,16 @@ window.Pages.work = (function () {
   /* 區域字串:原表格換行處會缺逗號(A1,A2,A8B1,B2,B3)→ 補成 A1,A2,A8,B1,B2,B3 */
   const fixRegion = (x) => String(x).replace(/(\d)([A-Za-z])/g, '$1,$2');
 
+  /* 區域代號依開頭字母(A/B/H)分色 */
+  function zoneHtml(group) {
+    return String(group).split(',').map((code) => {
+      const c = code.trim();
+      const k = (c.charAt(0) || '').toUpperCase();
+      const cls = k === 'A' ? 'z-a' : k === 'B' ? 'z-b' : k === 'H' ? 'z-h' : '';
+      return cls ? `<span class="${cls}">${esc(c)}</span>` : esc(c);
+    }).join(',');
+  }
+
   /* 復大查房:當日依班別彙整「誰負責哪一格」,同班別同醫師的多格合併 */
   function roundZones(md, day) {
     const list = (md && md.vsDuty && md.vsDuty.rounds && md.vsDuty.rounds[day]) || [];
@@ -245,11 +255,11 @@ window.Pages.work = (function () {
     zc.innerHTML = `<h2>🏥 復大分區<span style="font-weight:400;color:var(--text-2);font-size:.85rem"> ${now.getMonth() + 1}/${now.getDate()}</span></h2>` +
       (zones.length
         ? zones.map((s2) => `
-          <div class="section-label rz-${esc(s2.shift).toLowerCase()}" style="margin:12px 0 6px">${esc(s2.shift)} 班</div>
+          <div class="section-label" style="margin:12px 0 6px">${esc(s2.shift)} 班</div>
           ${s2.docs.map((d2) => `
-            <div class="rz-row rz-${esc(s2.shift).toLowerCase()}">
+            <div class="rz-row">
               <span class="rz-name">${esc(d2.name)}</span>${d2.f ? '<span class="rz-f">代查</span>' : ''}
-              <span class="rz-reg">〈${d2.regions.map(esc).join('〉和〈')}〉</span>
+              <span class="rz-reg">〈${d2.regions.map(zoneHtml).join('〉和〈')}〉</span>
             </div>`).join('')}`).join('')
         : `<div class="empty-hint" style="padding:12px 0">${md ? '今天沒有復大查房' : '本月班表尚未更新'}</div>`);
     root.appendChild(zc);
