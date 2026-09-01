@@ -245,9 +245,9 @@ window.Pages.work = (function () {
     zc.innerHTML = `<h2>🏥 復大分區<span style="font-weight:400;color:var(--text-2);font-size:.85rem"> ${now.getMonth() + 1}/${now.getDate()}</span></h2>` +
       (zones.length
         ? zones.map((s2) => `
-          <div class="section-label" style="margin:12px 0 6px">${esc(s2.shift)} 班</div>
+          <div class="section-label rz-${esc(s2.shift).toLowerCase()}" style="margin:12px 0 6px">${esc(s2.shift)} 班</div>
           ${s2.docs.map((d2) => `
-            <div class="rz-row">
+            <div class="rz-row rz-${esc(s2.shift).toLowerCase()}">
               <span class="rz-name">${esc(d2.name)}</span>${d2.f ? '<span class="rz-f">代查</span>' : ''}
               <span class="rz-reg">〈${d2.regions.map(esc).join('〉和〈')}〉</span>
             </div>`).join('')}`).join('')

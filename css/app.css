@@ -464,5 +464,13 @@ body {
 /* ===== 復大分區(班表頁) ===== */
 .rz-row { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; padding: 4px 0; line-height: 1.5; }
 .rz-name { font-weight: 700; color: var(--accent); flex: 0 0 auto; }
+/* A/B/C 三班各自配色 */
+:root { --sh-a: #0e7490; --sh-b: #b45309; --sh-c: #6d28d9; }
+@media (prefers-color-scheme: dark) {
+  :root { --sh-a: #22b8d4; --sh-b: #f0a04b; --sh-c: #b39af3; }
+}
+.rz-a .rz-name, .rz-a.section-label { color: var(--sh-a); }
+.rz-b .rz-name, .rz-b.section-label { color: var(--sh-b); }
+.rz-c .rz-name, .rz-c.section-label { color: var(--sh-c); }
 .rz-f { font-size: .68rem; color: var(--warn); border: 1px solid var(--warn); border-radius: 6px; padding: 0 4px; flex: 0 0 auto; }
 .rz-reg { font-size: .85rem; color: var(--text-2); }
