@@ -559,10 +559,10 @@ window.Pages.work = (function () {
       box.innerHTML = `
         <h3>${esc(it.name)}</h3>
         <div class="cv-line"><span class="cv-k">帳號</span><span class="cv-v" id="cv-ac">${esc(it.account || '—')}</span><button class="cv-cp" data-t="ac">複製</button></div>
-        <div class="cv-line"><span class="cv-k">密碼</span><span class="cv-v" id="cv-pw">••••••••</span><button class="cv-eye">顯示</button><button class="cv-cp" data-t="pw">複製</button></div>
+        <div class="cv-line"><span class="cv-k">密碼</span><span class="cv-v" id="cv-pw">${esc(it.password || '—')}</span><button class="cv-eye">隱藏</button><button class="cv-cp" data-t="pw">複製</button></div>
         ${it.note ? `<div class="cv-note">${esc(it.note)}</div>` : ''}
         <div class="rz-btns"><button class="cover-btn" id="cv-edit">編輯</button><button class="cover-btn" id="cv-close">關閉</button></div>`;
-      let shown = false;
+      let shown = true;   /* 密碼預設直接顯示 */
       box.querySelector('.cv-eye').addEventListener('click', (e) => {
         shown = !shown;
         box.querySelector('#cv-pw').textContent = shown ? (it.password || '—') : '••••••••';
