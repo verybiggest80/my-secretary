@@ -537,3 +537,24 @@ body {
 }
 .cv-note { font-size: .82rem; color: var(--text-2); margin-top: 6px; line-height: 1.5; }
 .cv-hint { font-size: .85rem; color: var(--text-2); margin: 8px 0 12px; line-height: 1.6; }
+
+/* ===== 復大查房備忘(To Do 分頁) ===== */
+.rn-zone h2 { font-size: 1.05rem; }
+.rn-rows { display: flex; flex-direction: column; gap: 8px; }
+.rn-row { display: flex; gap: 8px; align-items: center; }
+.rn-row .rn-bed { flex: 0 0 68px; }
+.rn-row .rn-ord { flex: 1; min-width: 0; }
+.rn-row input {
+  border: 1px solid var(--border); background: var(--bg); color: var(--text);
+  border-radius: 10px; padding: 9px 10px; font-size: .95rem; font-family: inherit; width: 100%;
+}
+.rn-row input:focus { outline: none; border-color: var(--accent); }
+.rn-del {
+  flex: 0 0 auto; border: none; background: none; color: var(--text-2);
+  font-size: .95rem; padding: 4px 2px; cursor: pointer;
+}
+.rn-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; }
+.rn-chips button {
+  border: 1px solid var(--border); background: var(--accent-soft); color: var(--accent);
+  border-radius: 14px; padding: 5px 11px; font-size: .82rem; font-weight: 600; cursor: pointer;
+}

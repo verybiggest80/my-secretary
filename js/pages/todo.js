@@ -3,8 +3,107 @@ window.Pages.todo = (function () {
   const ls = window.Store.ls;
   const files = window.Store.fileStore;
 
-  let root;
+  let root, headerBtn, titleEl;
   let filter = ls.get('todoFilter', 'open'); // 'open' | 'all'
+  let view = 'todo';                          // 'todo' | 'rounds'
+
+  /* ---------- 復大查房備忘 ---------- */
+  const ZONES = [
+    { k: 'A', label: 'A 區', cls: 'z-a' },
+    { k: 'B', label: 'B 區', cls: 'z-b' },
+    { k: 'H', label: 'H 區', cls: 'z-h' }
+  ];
+  const QUICK = ['改DW', 'LC 一盒', 'LC 二盒', '止痛藥'];
+
+  function notes() {
+    const n = ls.get('roundNotes', null);
+    if (n && n.A && n.B && n.H) return n;
+    return { A: [{ bed: '', order: '' }], B: [{ bed: '', order: '' }], H: [{ bed: '', order: '' }] };
+  }
+  function saveNotes(n) { ls.set('roundNotes', n); }
+
+  function renderRounds() {
+    const data = notes();
+    root.innerHTML = ZONES.map((z) => `
+      <div class="work-card rn-zone" data-z="${z.k}">
+        <h2><span class="${z.cls}">${esc(z.label)}</span></h2>
+        <div class="rn-rows">
+          ${(data[z.k] || []).map((r, i) => `
+            <div class="rn-row" data-i="${i}">
+              <input class="rn-bed" inputmode="numeric" placeholder="床號" value="${esc(r.bed || '')}">
+              <input class="rn-ord" placeholder="醫囑內容" value="${esc(r.order || '')}">
+              <button class="rn-del" aria-label="刪除">✕</button>
+            </div>`).join('')}
+        </div>
+        <div class="rn-chips">${QUICK.map((q) => `<button data-t="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+        <button class="rn-add cover-btn">＋ 新增一列</button>
+      </div>`).join('') +
+      `<button id="rn-clear" class="btn-secondary" style="width:100%">清空全部</button>`;
+
+    root.querySelectorAll('.rn-zone').forEach((zc) => {
+      const k = zc.dataset.z;
+      let lastOrd = zc.querySelector('.rn-ord');   /* 快捷鈕要插入的欄位 */
+
+      zc.querySelectorAll('.rn-row').forEach((row) => {
+        const i = Number(row.dataset.i);
+        const bed = row.querySelector('.rn-bed');
+        const ord = row.querySelector('.rn-ord');
+        const upd = () => {
+          const n = notes();
+          n[k][i] = { bed: bed.value, order: ord.value };
+          saveNotes(n);
+        };
+        bed.addEventListener('input', upd);
+        ord.addEventListener('input', upd);
+        ord.addEventListener('focus', () => { lastOrd = ord; });
+        row.querySelector('.rn-del').addEventListener('click', () => {
+          const n = notes();
+          n[k].splice(i, 1);
+          if (!n[k].length) n[k] = [{ bed: '', order: '' }];
+          saveNotes(n); renderRounds();
+        });
+      });
+
+      zc.querySelectorAll('.rn-chips button').forEach((b) =>
+        b.addEventListener('click', () => {
+          const t = b.dataset.t;
+          const cur = lastOrd.value.trim();
+          lastOrd.value = cur ? cur + '、' + t : t;
+          lastOrd.dispatchEvent(new Event('input'));
+          lastOrd.focus();
+        }));
+
+      zc.querySelector('.rn-add').addEventListener('click', () => {
+        const n = notes();
+        n[k].push({ bed: '', order: '' });
+        saveNotes(n); renderRounds();
+        const rows = root.querySelector(`.rn-zone[data-z="${k}"]`).querySelectorAll('.rn-bed');
+        rows[rows.length - 1].focus();
+      });
+    });
+
+    root.querySelector('#rn-clear').addEventListener('click', () => {
+      if (!window.confirm('清空三個區的所有備忘?')) return;
+      ls.set('roundNotes', null);
+      renderRounds();
+    });
+  }
+
+  function applyHeader() {
+    if (!headerBtn) return;
+    headerBtn.classList.remove('hidden');
+    headerBtn.textContent = view === 'todo' ? '復大查房' : '← To Do';
+    headerBtn.onclick = () => {
+      view = view === 'todo' ? 'rounds' : 'todo';
+      draw();
+    };
+  }
+
+  function draw() {
+    applyHeader();
+    if (titleEl) titleEl.textContent = view === 'todo' ? 'To Do List' : '復大查房';
+    if (view === 'rounds') renderRounds(); else render();
+  }
 
   /* 錄音/播放狀態 */
   const canRec = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
@@ -161,7 +260,11 @@ window.Pages.todo = (function () {
   }
 
   return {
-    init(el) { root = el; },
-    show() { render(); }
+    init(el, ctx) {
+      root = el;
+      headerBtn = ctx && ctx.headerBtn;
+      titleEl = ctx && ctx.titleEl;
+    },
+    show() { draw(); }
   };
 })();
