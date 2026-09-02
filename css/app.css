@@ -464,7 +464,11 @@ body {
 /* ===== 復大分區(班表頁) ===== */
 .rz-row { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; padding: 4px 0; line-height: 1.5; }
 /* 姓名用一般文字色:深色模式為白色,淺色模式仍可讀 */
-.rz-name { font-weight: 700; color: var(--text); flex: 0 0 auto; }
+.rz-name {
+  font-weight: 700; color: var(--text); flex: 0 0 auto;
+  border: none; background: none; padding: 0; font-size: inherit; font-family: inherit;
+  cursor: pointer; border-bottom: 1px dashed var(--border);
+}
 /* 區域代號依 A / B / H 區分色 */
 :root { --zone-a: #0e7490; --zone-b: #b45309; --zone-h: #6d28d9; }
 @media (prefers-color-scheme: dark) {
@@ -503,3 +507,32 @@ body {
 }
 .gal-nav button:disabled { opacity: .35; }
 .gal-info { flex: 1; text-align: center; font-size: .82rem; color: var(--text-2); word-break: break-all; }
+
+/* ===== 帳密保險箱 ===== */
+.pin-err { color: var(--danger); font-size: .82rem; min-height: 1.2em; margin: 4px 0 8px; }
+.cv-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.cv-nm { font-weight: 600; flex: 0 0 auto; }
+.cv-ac { flex: 1; font-size: .82rem; color: var(--text-2); word-break: break-all; }
+.cv-edit, .cv-del {
+  border: 1px solid var(--border); background: var(--card); color: var(--text-2);
+  border-radius: 8px; font-size: .78rem; padding: 4px 8px; cursor: pointer;
+}
+.cv-mask {
+  position: fixed; inset: 0; background: rgba(10, 16, 24, .55); z-index: 60;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.cv-box {
+  background: var(--card); border-radius: var(--radius); padding: 18px;
+  width: 100%; max-width: 360px; max-height: 84vh; overflow: auto; box-shadow: 0 8px 30px rgba(0,0,0,.3);
+}
+.cv-box h3 { font-size: 1.05rem; margin-bottom: 10px; }
+.cv-box .cv-inline { border: none; box-shadow: none; padding: 0; margin: 0; }
+.cv-line { display: flex; align-items: center; gap: 8px; padding: 7px 0; }
+.cv-k { flex: 0 0 40px; font-size: .8rem; color: var(--text-2); }
+.cv-v { flex: 1; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
+.cv-cp, .cv-eye {
+  border: 1px solid var(--border); background: var(--card); color: var(--accent);
+  border-radius: 8px; font-size: .75rem; padding: 4px 8px; cursor: pointer; flex: 0 0 auto;
+}
+.cv-note { font-size: .82rem; color: var(--text-2); margin-top: 6px; line-height: 1.5; }
+.cv-hint { font-size: .85rem; color: var(--text-2); margin: 8px 0 12px; line-height: 1.6; }

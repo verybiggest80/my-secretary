@@ -1,5 +1,5 @@
 /* Service Worker — 頁面採網路優先(確保拿到新版),資源採快取優先+背景更新 */
-const VERSION = 'v1.61.0';
+const VERSION = 'v1.62.0';
 const CACHE = `secretary-${VERSION}`;
 const SHELL = [
   './',
@@ -8,6 +8,7 @@ const SHELL = [
   './css/app.css',
   './js/app.js',
   './js/store.js',
+  './js/vault.js',
   './js/schedule-data.js',
   './js/consult-data.js',
   './js/dx-data.js',
