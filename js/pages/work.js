@@ -515,17 +515,38 @@ window.Pages.work = (function () {
       btn.addEventListener('click', async () => {
         msg.textContent = '';
         if (window.Bio.enabled()) { window.Bio.disable(); draw(); return; }
-        const p = window.prompt('請再輸入一次目前的 PIN 以啟用 Face ID');
-        if (!p) return;
-        try { await V().unlock(p.trim()); } catch (e) { msg.textContent = 'PIN 不正確'; return; }
-        try { await window.Bio.enable(p.trim()); draw(); msg.textContent = '已啟用,下次可用 Face ID 解鎖'; }
-        catch (e) { msg.textContent = e.message || '此裝置不支援'; }
+        /* 保險箱已解鎖,直接沿用記憶體中的 PIN;不可用 prompt(會讓視窗失去焦點) */
+        const p = V().currentPin();
+        if (!p) { msg.textContent = '請先解鎖保險箱'; return; }
+        msg.textContent = '請完成 Face ID 驗證…';
+        try {
+          await window.Bio.enable(p);
+          draw();
+          msg.textContent = '已啟用,下次可用 Face ID 解鎖';
+        } catch (e) {
+          const m = String((e && e.message) || '');
+          msg.textContent = /not focused/i.test(m) ? '請先點一下畫面再試一次'
+            : /NotAllowed|AbortError/i.test((e && e.name) || '') ? '已取消或驗證失敗'
+            : (m || '此裝置不支援');
+        }
       });
     })();
 
     card.querySelector('#cr-pin').addEventListener('click', () => {
-      const np = window.prompt('輸入新的 PIN(至少 4 位)');
-      if (np && np.trim().length >= 4) V().changePin(np.trim()).then(() => window.alert('已變更'));
+      const msg = card.querySelector('#cr-bio-msg');
+      const row = document.createElement('div');
+      row.className = 'field';
+      row.innerHTML = `<label>新的 PIN(至少 4 位)</label>
+        <input id="np-a" type="password" inputmode="numeric" autocomplete="off">
+        <button id="np-go" class="cover-btn" style="margin-top:8px">確認變更</button>`;
+      card.querySelector('#cr-pin').replaceWith(row);
+      row.querySelector('#np-go').addEventListener('click', async () => {
+        const np = row.querySelector('#np-a').value.trim();
+        if (np.length < 4) { msg.textContent = 'PIN 至少 4 位'; return; }
+        await V().changePin(np);
+        if (window.Bio && window.Bio.enabled()) window.Bio.disable();   /* 舊的 Face ID 綁定已失效 */
+        renderCreds();
+      });
     });
 
     window.scrollTo(0, 0);

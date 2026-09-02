@@ -53,6 +53,8 @@ window.Vault = (function () {
     },
 
     lock() { list = null; pin = null; },
+    /* 解鎖期間才取得得到;供啟用 Face ID 時綁定,避免再彈出輸入框 */
+    currentPin() { return list ? pin : null; },
     all() { return list ? list.slice() : []; },
 
     find(name) {
