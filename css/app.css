@@ -469,6 +469,7 @@ body {
   border: none; background: none; padding: 0; font-size: inherit; font-family: inherit;
   cursor: pointer; border-bottom: 1px dashed var(--border);
 }
+.rz-name.rz-plain { cursor: default; border-bottom: none; }
 /* 區域代號依 A / B / H 區分色 */
 :root { --zone-a: #0e7490; --zone-b: #b45309; --zone-h: #6d28d9; }
 @media (prefers-color-scheme: dark) {

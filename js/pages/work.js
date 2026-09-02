@@ -256,6 +256,8 @@ window.Pages.work = (function () {
     const zWord = zoneTomorrow ? '明天' : '今天';
     const md = monthData(target);
     const zones = roundZones(md, target.getDate());
+    /* 點姓名查帳密只在住院醫師版提供 */
+    const isResident = ls.get('role', 'resident') !== 'vs';
     const zc = document.createElement('div');
     zc.className = 'work-card';
     zc.innerHTML = `<h2>🏥 復大分區<span style="font-weight:400;color:var(--text-2);font-size:.85rem"> ${target.getMonth() + 1}/${target.getDate()}</span></h2>` +
@@ -264,7 +266,9 @@ window.Pages.work = (function () {
           <div class="section-label" style="margin:12px 0 6px">${esc(s2.shift)} 班</div>
           ${s2.docs.map((d2) => `
             <div class="rz-row">
-              <button class="rz-name" data-doc="${esc(d2.name)}">${esc(d2.name)}</button>${d2.f ? '<span class="rz-f">代查</span>' : ''}
+              ${isResident
+                ? `<button class="rz-name" data-doc="${esc(d2.name)}">${esc(d2.name)}</button>`
+                : `<span class="rz-name rz-plain">${esc(d2.name)}</span>`}${d2.f ? '<span class="rz-f">代查</span>' : ''}
               <span class="rz-reg">〈${d2.regions.map(zoneHtml).join('〉和〈')}〉</span>
             </div>`).join('')}`).join('')
         : `<div class="empty-hint" style="padding:12px 0">${md ? zWord + '沒有復大查房' : ymOf(target) + ' 班表尚未更新'}</div>`);
@@ -278,9 +282,11 @@ window.Pages.work = (function () {
       renderSchedule();
     });
     zc.querySelector('#rz-creds').addEventListener('click', renderCreds);
-    /* 點醫師姓名 → 疊層顯示該醫師帳密 */
-    zc.querySelectorAll('.rz-name').forEach((b) =>
-      b.addEventListener('click', () => credOverlay(b.dataset.doc)));
+    /* 點醫師姓名 → 疊層顯示該醫師帳密(僅住院醫師版) */
+    if (isResident) {
+      zc.querySelectorAll('button.rz-name').forEach((b) =>
+        b.addEventListener('click', () => credOverlay(b.dataset.doc)));
+    }
     root.appendChild(zc);
 
     /* 雲端班表:隨網站部署,所有裝置皆可開啟(每個檔案一張卡片) */
@@ -367,60 +373,6 @@ window.Pages.work = (function () {
       root.appendChild(w);
       return;
     }
-    if (!V().unlocked()) {
-      root.appendChild(pinForm(V().exists() ? 'unlock' : 'create', renderCreds));
-      window.scrollTo(0, 0);
-      return;
-    }
-
-    /* --- 已解鎖:醫師帳密清單 --- */
-    const card = document.createElement('div');
-    card.className = 'work-card';
-    const items = V().all();
-    card.innerHTML = `
-      <h2>🔑 帳密<button id="cr-lock" class="cover-btn" style="float:right;margin:0">鎖定</button></h2>
-      <div class="tile-sub" style="color:var(--text-2);font-size:.78rem;line-height:1.6;margin-bottom:10px">
-        以 PIN 加密後只存在這台裝置,不會上傳。換手機或清除瀏覽器資料就會消失。
-      </div>
-      <div id="cr-items">${items.length
-        ? items.map((it) => `
-          <div class="cv-row">
-            <span class="cv-nm">${esc(it.name)}</span>
-            <span class="cv-ac">${esc(it.account || '')}</span>
-            <button class="cv-edit" data-n="${esc(it.name)}">編輯</button>
-            <button class="cv-del" data-n="${esc(it.name)}">✕</button>
-          </div>`).join('')
-        : '<div class="empty-hint" style="padding:14px 0">尚未建立任何帳密</div>'}</div>
-      <button id="cr-add" class="btn-primary">新增醫師帳密</button>
-      <div class="rz-btns">
-        <button id="cr-export" class="cover-btn">匯出加密備份</button>
-        <button id="cr-pin" class="cover-btn">變更 PIN</button>
-      </div>`;
-    root.appendChild(card);
-
-    card.querySelector('#cr-lock').addEventListener('click', () => { V().lock(); renderCreds(); });
-    card.querySelector('#cr-add').addEventListener('click', () => credEditor(''));
-    card.querySelectorAll('.cv-edit').forEach((b) =>
-      b.addEventListener('click', () => credEditor(b.dataset.n)));
-    card.querySelectorAll('.cv-del').forEach((b) =>
-      b.addEventListener('click', async () => {
-        if (!window.confirm(`刪除「${b.dataset.n}」的帳密?`)) return;
-        await V().remove(b.dataset.n); renderCreds();
-      }));
-    card.querySelector('#cr-export').addEventListener('click', () => {
-      const blob = V().exportBlob();
-      if (!blob) return;
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'vault-backup.json';
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 30000);
-    });
-    card.querySelector('#cr-pin').addEventListener('click', () => {
-      const np = window.prompt('輸入新的 PIN(至少 4 位)');
-      if (np && np.trim().length >= 4) V().changePin(np.trim()).then(() => window.alert('已變更'));
-    });
-
     /* --- 圖片/PDF 附件(沿用原本的本機檔案儲存) --- */
     const fcard = document.createElement('div');
     fcard.className = 'work-card';
@@ -486,6 +438,61 @@ window.Pages.work = (function () {
     refresh().catch(() => {
       body.innerHTML = '<div class="empty-hint" style="padding:16px 0">此瀏覽器無法使用本機儲存(可能是無痕模式)</div>';
     });
+    /* --- 帳密卡片排在圖片備份下方;未解鎖時只顯示 PIN 表單 --- */
+    if (!V().unlocked()) {
+      root.appendChild(pinForm(V().exists() ? 'unlock' : 'create', renderCreds));
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    /* --- 已解鎖:醫師帳密清單 --- */
+    const card = document.createElement('div');
+    card.className = 'work-card';
+    const items = V().all();
+    card.innerHTML = `
+      <h2>🔑 帳密<button id="cr-lock" class="cover-btn" style="float:right;margin:0">鎖定</button></h2>
+      <div class="tile-sub" style="color:var(--text-2);font-size:.78rem;line-height:1.6;margin-bottom:10px">
+        以 PIN 加密後只存在這台裝置,不會上傳。換手機或清除瀏覽器資料就會消失。
+      </div>
+      <div id="cr-items">${items.length
+        ? items.map((it) => `
+          <div class="cv-row">
+            <span class="cv-nm">${esc(it.name)}</span>
+            <span class="cv-ac">${esc(it.account || '')}</span>
+            <button class="cv-edit" data-n="${esc(it.name)}">編輯</button>
+            <button class="cv-del" data-n="${esc(it.name)}">✕</button>
+          </div>`).join('')
+        : '<div class="empty-hint" style="padding:14px 0">尚未建立任何帳密</div>'}</div>
+      <button id="cr-add" class="btn-primary">新增醫師帳密</button>
+      <div class="rz-btns">
+        <button id="cr-export" class="cover-btn">匯出加密備份</button>
+        <button id="cr-pin" class="cover-btn">變更 PIN</button>
+      </div>`;
+    root.appendChild(card);
+
+    card.querySelector('#cr-lock').addEventListener('click', () => { V().lock(); renderCreds(); });
+    card.querySelector('#cr-add').addEventListener('click', () => credEditor(''));
+    card.querySelectorAll('.cv-edit').forEach((b) =>
+      b.addEventListener('click', () => credEditor(b.dataset.n)));
+    card.querySelectorAll('.cv-del').forEach((b) =>
+      b.addEventListener('click', async () => {
+        if (!window.confirm(`刪除「${b.dataset.n}」的帳密?`)) return;
+        await V().remove(b.dataset.n); renderCreds();
+      }));
+    card.querySelector('#cr-export').addEventListener('click', () => {
+      const blob = V().exportBlob();
+      if (!blob) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'vault-backup.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+    });
+    card.querySelector('#cr-pin').addEventListener('click', () => {
+      const np = window.prompt('輸入新的 PIN(至少 4 位)');
+      if (np && np.trim().length >= 4) V().changePin(np.trim()).then(() => window.alert('已變更'));
+    });
+
     window.scrollTo(0, 0);
   }
 
