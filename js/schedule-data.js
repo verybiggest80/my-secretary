@@ -43,14 +43,24 @@ window.ScheduleData = {
   /* 各月份資料;App 會依當下日期自動選用對應月份 */
   months: {
     "2026-09": {   /* 九月 */
-      /* 晨會及科務活動 — 班表第1頁(已排除 CR teaching、12F內科討論室、教學住診/門診/病例迴診) */
+      /* 晨會及科務活動 — 班表第1頁(含大內科晨會;已排除 CR teaching、教學住診/門診/病例迴診) */
       meetings: {
         1: [{ time: "07:45-08:30", title: "晨會:Orientation", speaker: "曾珮禎醫師", host: "曾珮禎醫師", place: "3F會議室" }],
-        8: [{ time: "07:30-08:30", title: "科務會議暨防護衣穿脫演練", speaker: "林均叡/李文欽醫師", host: "李文欽醫師", place: "3F會議室" }],
+        3: [{ time: "07:30-08:30", title: "內科晨會", speaker: "陳友木醫師", host: "蕭喻心醫師", place: "12F內科討論室" }],
+        8: [
+          { time: "07:30-08:30", title: "X光影像判讀(2)", speaker: "張育平醫師", host: "許展境/郭垣宏醫師", place: "12F內科討論室" },
+          { time: "07:30-08:30", title: "科務會議暨防護衣穿脫演練", speaker: "林均叡/李文欽醫師", host: "李文欽醫師", place: "3F會議室" }
+        ],
         10: [{ time: "07:30-08:30", title: "內科晨會-Mortality and Morbidity", speaker: "余秉聰/張恩睿醫師", host: "學術CR-蕭喻心", place: "6F大禮堂" }],
+        15: [{ time: "07:30-08:30", title: "內科晨會-X光影像判讀(1)-Chest-1", speaker: "秦建弘醫師", host: "學術CR-許展境", place: "12F內科討論室" }],
         16: [{ time: "07:30-08:30", title: "Journal reading-Acute peritoneal dialysis", speaker: "吳振立/鄭本忠醫師", host: "黃富誠/鄭本忠醫師", place: "3F會議室" }],
         17: [{ time: "07:30-08:30", title: "內科晨會", speaker: "王慧婷醫師", host: "陳永隆主任", place: "6F大禮堂" }],
-        24: [{ time: "11:30-12:30", title: "超長期、14天再入院暨輪訓醫師座談會", speaker: "各輪訓醫師", host: "曾珮禎醫師", place: "3F會議室" }],
+        22: [{ time: "07:30-08:30", title: "內科晨會-內科職涯發展系列講座(4)", speaker: "馬銘君醫師", host: "許展境/邱鼎育醫師", place: "12F內科討論室" }],
+        24: [
+          { time: "07:30-08:30", title: "內科晨會", speaker: "李育騏醫師", host: "蕭喻心醫師", place: "12F內科討論室" },
+          { time: "11:30-12:30", title: "超長期、14天再入院暨輪訓醫師座談會", speaker: "各輪訓醫師", host: "曾珮禎醫師", place: "3F會議室" }
+        ],
+        29: [{ time: "07:30-08:30", title: "內科晨會-X光影像判讀(3)-Brain Image", speaker: "尤俊傑醫師", host: "許展境/郭垣宏醫師", place: "12F內科討論室" }],
         30: [{ time: "07:30-08:30", title: "Mortality and Morbidity", speaker: "陳彥翰/劉庭均醫師", host: "曾珮禎/劉庭均醫師", place: "3F會議室" }]
       },
       vsDuty: {
