@@ -98,3 +98,100 @@ window.Vault = (function () {
     destroy() { localStorage.removeItem(KEY); list = null; pin = null; }
   };
 })();
+
+/* bio.js 部分 — 用 Face ID / Touch ID 解鎖
+   原理:以 WebAuthn 建立一組 passkey,並透過 PRF(hmac-secret)擴充從中導出一把固定金鑰,
+   再用這把金鑰把 PIN 加密存起來。通過 Face ID 才拿得到那把金鑰,因此不是「只擋在門口」,
+   而是真的沒有生物辨識就解不開。若裝置不支援 PRF,就維持只能用 PIN。 */
+window.Bio = (function () {
+  const KEY = 'sec_bio';
+  const SALT = new TextEncoder().encode('sec-vault-prf-v1');
+  const enc = new TextEncoder();
+  const dec = new TextDecoder();
+  const b64 = (b) => btoa(String.fromCharCode.apply(null, new Uint8Array(b)));
+  const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+
+  function saved() {
+    try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; }
+  }
+
+  async function keyFrom(secret) {
+    return crypto.subtle.importKey('raw', secret, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+  }
+
+  /* 用既有 credential 取得 PRF 秘密 */
+  async function prfSecret(credId) {
+    const opts = {
+      challenge: crypto.getRandomValues(new Uint8Array(32)),
+      userVerification: 'required',
+      extensions: { prf: { eval: { first: SALT } } }
+    };
+    if (credId) opts.allowCredentials = [{ id: unb64(credId), type: 'public-key' }];
+    const a = await navigator.credentials.get({ publicKey: opts });
+    const r = a.getClientExtensionResults();
+    if (!r || !r.prf || !r.prf.results || !r.prf.results.first) return null;
+    return { secret: r.prf.results.first, id: b64(a.rawId) };
+  }
+
+  return {
+    supported() {
+      return !!(window.PublicKeyCredential && navigator.credentials &&
+                window.crypto && window.crypto.subtle);
+    },
+    enabled() { return !!saved(); },
+
+    async platformAvailable() {
+      if (!this.supported()) return false;
+      try {
+        return await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      } catch (e) { return false; }
+    },
+
+    /* 啟用:需要目前的 PIN,才能把它加密保存 */
+    async enable(pin) {
+      const cred = await navigator.credentials.create({
+        publicKey: {
+          challenge: crypto.getRandomValues(new Uint8Array(32)),
+          rp: { name: '個人秘書', id: location.hostname },
+          user: {
+            id: crypto.getRandomValues(new Uint8Array(16)),
+            name: 'secretary', displayName: '個人秘書'
+          },
+          pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+          authenticatorSelection: {
+            authenticatorAttachment: 'platform',
+            residentKey: 'required',
+            userVerification: 'required'
+          },
+          timeout: 60000,
+          extensions: { prf: {} }
+        }
+      });
+      const ext = cred.getClientExtensionResults();
+      if (!ext || !ext.prf || ext.prf.enabled === false) {
+        throw new Error('此裝置的生物辨識不支援金鑰導出(PRF)');
+      }
+      /* 建立後再做一次 get 才拿得到 PRF 秘密 */
+      const got = await prfSecret(b64(cred.rawId));
+      if (!got) throw new Error('無法取得金鑰,此裝置可能不支援 PRF');
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const ct = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv }, await keyFrom(got.secret), enc.encode(pin));
+      localStorage.setItem(KEY, JSON.stringify({ v: 1, id: got.id, iv: b64(iv), ct: b64(ct) }));
+      return true;
+    },
+
+    /* 解鎖:通過 Face ID 後取回 PIN */
+    async unlock() {
+      const o = saved();
+      if (!o) throw new Error('尚未啟用');
+      const got = await prfSecret(o.id);
+      if (!got) throw new Error('無法取得金鑰');
+      const pt = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: unb64(o.iv) }, await keyFrom(got.secret), unb64(o.ct));
+      return dec.decode(pt);
+    },
+
+    disable() { localStorage.removeItem(KEY); }
+  };
+})();

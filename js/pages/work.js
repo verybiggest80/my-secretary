@@ -342,7 +342,9 @@ window.Pages.work = (function () {
       <div class="field"><input id="pin-a" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN"></div>
       ${mode === 'create' ? '<div class="field"><input id="pin-b" type="password" inputmode="numeric" autocomplete="off" placeholder="再輸入一次"></div>' : ''}
       <div class="pin-err" id="pin-err"></div>
-      <button id="pin-go" class="btn-primary">${mode === 'create' ? '建立' : '解鎖'}</button>`;
+      <button id="pin-go" class="btn-primary">${mode === 'create' ? '建立' : '解鎖'}</button>
+      ${mode === 'unlock' && window.Bio && window.Bio.enabled()
+        ? '<button id="pin-bio" class="btn-secondary" style="margin-top:8px">🙂 用 Face ID 解鎖</button>' : ''}`;
     const err = (m) => { box.querySelector('#pin-err').textContent = m || ''; };
     const go = async () => {
       const a = box.querySelector('#pin-a').value.trim();
@@ -356,6 +358,18 @@ window.Pages.work = (function () {
       err(''); onOk();
     };
     box.querySelector('#pin-go').addEventListener('click', go);
+    const bioBtn = box.querySelector('#pin-bio');
+    if (bioBtn) {
+      bioBtn.addEventListener('click', async () => {
+        try {
+          const p = await window.Bio.unlock();
+          await V().unlock(p);
+          err(''); onOk();
+        } catch (e) {
+          err('Face ID 解鎖失敗,請改用 PIN');
+        }
+      });
+    }
     box.querySelectorAll('input').forEach((i) =>
       i.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); }));
     return box;
@@ -467,7 +481,9 @@ window.Pages.work = (function () {
       <div class="rz-btns">
         <button id="cr-export" class="cover-btn">匯出加密備份</button>
         <button id="cr-pin" class="cover-btn">變更 PIN</button>
-      </div>`;
+        <button id="cr-bio" class="cover-btn"></button>
+      </div>
+      <div class="pin-err" id="cr-bio-msg"></div>`;
     root.appendChild(card);
 
     card.querySelector('#cr-lock').addEventListener('click', () => { V().lock(); renderCreds(); });
@@ -488,6 +504,25 @@ window.Pages.work = (function () {
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 30000);
     });
+    /* Face ID:啟用需要目前的 PIN,才能把它加密保存 */
+    (async () => {
+      const btn = card.querySelector('#cr-bio');
+      const msg = card.querySelector('#cr-bio-msg');
+      const ok = window.Bio && window.Bio.supported() && await window.Bio.platformAvailable();
+      if (!ok) { btn.style.display = 'none'; msg.textContent = ''; return; }
+      const draw = () => { btn.textContent = window.Bio.enabled() ? '停用 Face ID' : '啟用 Face ID'; };
+      draw();
+      btn.addEventListener('click', async () => {
+        msg.textContent = '';
+        if (window.Bio.enabled()) { window.Bio.disable(); draw(); return; }
+        const p = window.prompt('請再輸入一次目前的 PIN 以啟用 Face ID');
+        if (!p) return;
+        try { await V().unlock(p.trim()); } catch (e) { msg.textContent = 'PIN 不正確'; return; }
+        try { await window.Bio.enable(p.trim()); draw(); msg.textContent = '已啟用,下次可用 Face ID 解鎖'; }
+        catch (e) { msg.textContent = e.message || '此裝置不支援'; }
+      });
+    })();
+
     card.querySelector('#cr-pin').addEventListener('click', () => {
       const np = window.prompt('輸入新的 PIN(至少 4 位)');
       if (np && np.trim().length >= 4) V().changePin(np.trim()).then(() => window.alert('已變更'));
