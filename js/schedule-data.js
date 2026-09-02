@@ -125,6 +125,10 @@ window.ScheduleData = {
         { from: 1,  to: 15, name: "王韋婷" },
         { from: 16, to: 30, name: "許瑞廷" }
       ],
+      /* CR teaching 日期(晨會表中不提醒,但病房CR 需要通知大家) */
+      crTeaching: [2, 7, 9, 14, 21, 23],
+      /* 當月病房CR */
+      wardCR: [{ from: 1, to: 30, name: "曾珮禎" }],
       /* 當月負責代查復大查房(班表日期前有 F)的總醫師 */
       roundHelper: [
         { from: 1,  to: 15, name: "許瑞廷" },

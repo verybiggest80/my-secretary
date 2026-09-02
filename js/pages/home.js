@@ -144,6 +144,19 @@ window.Pages.home = (function () {
       const md = monthData(target);
       const list = (md && md.meetings && md.meetings[target.getDate()]) || [];
 
+      /* 病房CR:隔天有 CR teaching 時,給一則可複製的提醒 */
+      const who = ((ls.get('realName', '') || '').trim()) || ((ls.get('userName', '') || '').trim());
+      const d2 = target.getDate();
+      const crRule = md && (md.wardCR || []).find((r) => d2 >= r.from && d2 <= r.to);
+      const isWardCR = !!crRule && !!who && (crRule.name.includes(who) || who.includes(crRule.name));
+      const crtTomorrow = !today && isWardCR && md && (md.crTeaching || []).indexOf(d2) >= 0;
+      const crBlock = crtTomorrow
+        ? `<div class="mt-cr">
+             <span class="mt-cr-t">📣 提醒 CR teaching</span>
+             <button id="cr-copy" class="mt-cr-btn">複製</button>
+           </div>`
+        : '';
+
       let body;
       if (!md) {
         body = `<div class="mt-empty">${ymOf(target)} 會議表尚未更新</div>`;
@@ -163,6 +176,7 @@ window.Pages.home = (function () {
           </div>`;
         }).join('');
       }
+      body = crBlock + body;
       body += `<button id="meeting-toggle" class="cover-btn">${today ? '回到明天' : '看今天會議'}</button>`;
       return {
         title: `📣 ${today ? '今日' : '明日'}會議提醒<span class="mt-date">${target.getMonth() + 1}/${target.getDate()}</span>`,
@@ -231,6 +245,22 @@ window.Pages.home = (function () {
       e.stopPropagation();
       meetingShowToday = !meetingShowToday;
       render();
+    });
+
+    /* 病房CR:複製 CR teaching 提醒文字 */
+    const cc = root.querySelector('#cr-copy');
+    if (cc) cc.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const txt = '提醒:\n明日晨會: CR teaching \n時間: 07:45~08:30\n地點: 3樓會議室';
+      const done = () => { cc.textContent = '已複製'; setTimeout(() => { cc.textContent = '複製'; }, 1500); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(done, done);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = txt; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (err) {}
+        ta.remove(); done();
+      }
     });
 
     /* Cover 卡片:今天/明天切換 */
