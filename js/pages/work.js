@@ -275,13 +275,14 @@ window.Pages.work = (function () {
     zc.insertAdjacentHTML('beforeend',
       `<div class="rz-btns">
          <button id="rz-toggle" class="cover-btn">${zoneTomorrow ? '回到今天' : '看看明天'}</button>
-         <button id="rz-creds" class="cover-btn">看看帳密</button>
+         ${isResident ? '<button id="rz-creds" class="cover-btn">看看帳密</button>' : ''}
        </div>`);
     zc.querySelector('#rz-toggle').addEventListener('click', () => {
       zoneTomorrow = !zoneTomorrow;
       renderSchedule();
     });
-    zc.querySelector('#rz-creds').addEventListener('click', renderCreds);
+    const credsBtn = zc.querySelector('#rz-creds');
+    if (credsBtn) credsBtn.addEventListener('click', renderCreds);
     /* 點醫師姓名 → 疊層顯示該醫師帳密(僅住院醫師版) */
     if (isResident) {
       zc.querySelectorAll('button.rz-name').forEach((b) =>
