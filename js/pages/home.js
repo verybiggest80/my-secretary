@@ -53,7 +53,8 @@ window.Pages.home = (function () {
   let root, nav, headerBtn, gearBtn, titleEl;
   let editing = false;
   let coverShowTomorrow = false; // Cover 卡片:false=今天, true=明天
-  let meetingShowToday = false;  // 會議卡片:false=明天(預設), true=今天
+  let meetingShowToday = false;
+  let crTexts = [];              // 病房CR 提醒文字(對應卡片上的複製鈕)  // 會議卡片:false=明天(預設), true=今天
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -149,13 +150,13 @@ window.Pages.home = (function () {
       const d2 = target.getDate();
       const crRule = md && (md.wardCR || []).find((r) => d2 >= r.from && d2 <= r.to);
       const isWardCR = !!crRule && !!who && (crRule.name.includes(who) || who.includes(crRule.name));
-      const crtTomorrow = !today && isWardCR && md && (md.crTeaching || []).indexOf(d2) >= 0;
-      const crBlock = crtTomorrow
-        ? `<div class="mt-cr">
-             <span class="mt-cr-t">📣 提醒 CR teaching</span>
-             <button id="cr-copy" class="mt-cr-btn">複製</button>
-           </div>`
-        : '';
+      const notices = (!today && isWardCR && md && md.crNotices && md.crNotices[d2]) || [];
+      const crBlock = notices.map((n, i) => `
+        <div class="mt-cr">
+          <span class="mt-cr-t">📣 提醒 ${esc(n.label)}</span>
+          <button class="mt-cr-btn cr-copy" data-i="${i}">複製</button>
+        </div>`).join('');
+      crTexts = notices.map((n) => n.text);
 
       let body;
       if (!md) {
@@ -247,11 +248,10 @@ window.Pages.home = (function () {
       render();
     });
 
-    /* 病房CR:複製 CR teaching 提醒文字 */
-    const cc = root.querySelector('#cr-copy');
-    if (cc) cc.addEventListener('click', (e) => {
+    /* 病房CR:複製提醒文字 */
+    root.querySelectorAll('.cr-copy').forEach((cc) => cc.addEventListener('click', (e) => {
       e.stopPropagation();
-      const txt = '提醒:\n明日晨會: CR teaching \n時間: 07:45~08:30\n地點: 3樓會議室';
+      const txt = crTexts[Number(cc.dataset.i)] || '';
       const done = () => { cc.textContent = '已複製'; setTimeout(() => { cc.textContent = '複製'; }, 1500); };
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(txt).then(done, done);
@@ -261,7 +261,7 @@ window.Pages.home = (function () {
         try { document.execCommand('copy'); } catch (err) {}
         ta.remove(); done();
       }
-    });
+    }));
 
     /* Cover 卡片:今天/明天切換 */
     const ct = root.querySelector('#cover-toggle');

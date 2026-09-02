@@ -125,8 +125,20 @@ window.ScheduleData = {
         { from: 1,  to: 15, name: "王韋婷" },
         { from: 16, to: 30, name: "許瑞廷" }
       ],
-      /* CR teaching 日期(晨會表中不提醒,但病房CR 需要通知大家) */
-      crTeaching: [2, 7, 9, 14, 21, 23],
+      /* 病房CR 專用的可複製提醒(晨會表中被過濾掉的項目也涵蓋在內) */
+      crNotices: {
+        2: [{ label: "CR teaching", text: "提醒:\n明日晨會: CR teaching \n時間: 07:45~08:30\n地點: 3樓會議室" }],
+        3: [{ label: "教學門診", text: "提醒: \n9/3(四)傅崇銘醫師教學門診:\n時間: AM 08:30\n地點: 教學門診區\n參加人員: Y1 王湘綾、Y1 余晧維、Y2 陳彥翰、UGY 林明彥" }],
+        7: [{ label: "CR teaching", text: "提醒:\n明日晨會: CR teaching \n時間: 07:45~08:30\n地點: 3樓會議室" }],
+        8: [{ label: "科務會議", text: "提醒: \n9/8(二)晨會:\n時間: 07:30~08:30 \n主題: 科務會議\n地點: 3樓會議室" }],
+        9: [{ label: "CR teaching", text: "提醒:\n明日晨會: CR teaching \n時間: 07:45~08:30\n地點: 3樓會議室" }],
+        14: [{ label: "CR teaching", text: "提醒:\n明日晨會: CR teaching \n時間: 07:45~08:30\n地點: 3樓會議室" }],
+        16: [{ label: "Journal reading", text: "提醒: \n9/16(三)晨會:\n時間: 07:30~08:30 \n主題: Journal reading\n地點: 3樓會議室\n主講者/主持人: 吳振立/鄭本忠醫師(主講)、黃富誠/鄭本忠醫師(主持)" }],
+        21: [{ label: "CR teaching", text: "提醒:\n明日晨會: CR teaching \n時間: 07:45~08:30\n地點: 3樓會議室" }],
+        23: [{ label: "CR teaching", text: "提醒:\n明日晨會: CR teaching \n時間: 07:45~08:30\n地點: 3樓會議室" }],
+        24: [{ label: "教學門診", text: "提醒: \n9/24(四)蔡凱帆醫師教學門診:\n時間: AM 08:30\n地點: 教學門診區\n參加人員: Y2 吳振立、Y1 王致剴、UGY 張庭毓" }],
+        30: [{ label: "Mortality and Morbidity", text: "提醒: \n9/30(三)晨會:\n時間: 07:30~08:30 \n主題: Mortality and Morbidity\n地點: 3樓會議室\n主講者/主持人: 陳彥翰/劉庭均醫師(主講)、曾珮禎/劉庭均醫師(主持)" }]
+      },
       /* 當月病房CR */
       wardCR: [{ from: 1, to: 30, name: "曾珮禎" }],
       /* 當月負責代查復大查房(班表日期前有 F)的總醫師 */
