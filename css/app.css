@@ -556,6 +556,8 @@ body {
   font-size: .95rem; padding: 4px 2px; cursor: pointer;
 }
 .rn-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; }
+.rn-chips.rn-chips2 { margin-top: 6px; }
+.rn-chips.rn-chips2 button { background: var(--bg); color: var(--text-2); }
 .rn-chips button {
   border: 1px solid var(--border); background: var(--accent-soft); color: var(--accent);
   border-radius: 14px; padding: 5px 11px; font-size: .82rem; font-weight: 600; cursor: pointer;

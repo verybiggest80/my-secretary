@@ -13,8 +13,11 @@ window.Pages.todo = (function () {
     { k: 'B', label: 'B 區', cls: 'z-b' },
     { k: 'H', label: 'H 區', cls: 'z-h' }
   ];
-  const QUICK = ['改DW', 'LC', '1', '2', '止痛藥', 'LPR+Vena', '鈣片'];
-  const NOSEP = ['1', '2'];          /* 這些直接接在後面,不加「、」 */
+  /* 快捷醫囑:第一行是醫囑本身(以「、」分隔),第二行是劑量/頻次(直接接在後面) */
+  const QUICK = [
+    ['改DW to', 'L-Carnitine', 'Vena+LPR2U', '鈣片'],
+    ['一盒', '兩盒', '1PC', '2PC', 'TID']
+  ];
 
   function notes() {
     const n = ls.get('roundNotes', null);
@@ -37,7 +40,9 @@ window.Pages.todo = (function () {
               <button class="rn-del" aria-label="刪除">✕</button>
             </div>`).join('')}
         </div>
-        <div class="rn-chips">${QUICK.map((q) => `<button data-t="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+        ${QUICK.map((rowArr, ri) => `<div class="rn-chips${ri ? ' rn-chips2' : ''}">${
+          rowArr.map((q) => `<button data-t="${esc(q)}" data-r="${ri}">${esc(q)}</button>`).join('')
+        }</div>`).join('')}
         <button class="rn-add cover-btn">＋ 新增一列</button>
       </div>`).join('') +
       `<button id="rn-clear" class="btn-secondary" style="width:100%">清空全部</button>`;
@@ -75,7 +80,7 @@ window.Pages.todo = (function () {
         b.addEventListener('click', () => {
           const t = b.dataset.t;
           const cur = lastOrd.value.trim();
-          const glue = NOSEP.indexOf(t) >= 0 ? '' : '、';
+          const glue = b.dataset.r === '1' ? ' ' : '、';   /* 劑量/頻次用空格接續 */
           lastOrd.value = cur ? cur + glue + t : t;
           lastOrd.dispatchEvent(new Event('input'));
           lastOrd.focus();
