@@ -95,6 +95,7 @@ window.Pages.todo = (function () {
       ls.set('roundNotes', null);
       renderRounds();
     });
+    applyHeader();
   }
 
   function applyHeader() {
@@ -265,6 +266,7 @@ window.Pages.todo = (function () {
         render();
       });
     });
+    applyHeader();
   }
 
   return {
