@@ -13,7 +13,7 @@ window.Pages.todo = (function () {
     { k: 'B', label: 'B 區', cls: 'z-b' },
     { k: 'H', label: 'H 區', cls: 'z-h' }
   ];
-  const QUICK = ['改DW', 'LC 一盒', 'LC 二盒', '止痛藥'];
+  const QUICK = ['改DW', 'LC 一盒', 'LC 二盒', '止痛藥', 'LPR+Vena', '鈣片'];
 
   function notes() {
     const n = ls.get('roundNotes', null);
