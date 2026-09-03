@@ -13,12 +13,13 @@ window.Pages.todo = (function () {
     { k: 'B', label: 'B 區', cls: 'z-b' },
     { k: 'H', label: 'H 區', cls: 'z-h' }
   ];
-  const QUICK = ['改DW', 'LC 一盒', 'LC 二盒', '止痛藥', 'LPR+Vena', '鈣片'];
+  const QUICK = ['改DW', 'LC', '1', '2', '止痛藥', 'LPR+Vena', '鈣片'];
+  const NOSEP = ['1', '2'];          /* 這些直接接在後面,不加「、」 */
 
   function notes() {
     const n = ls.get('roundNotes', null);
     if (n && n.A && n.B && n.H) return n;
-    return { A: [{ bed: '', order: '' }], B: [{ bed: '', order: '' }], H: [{ bed: '', order: '' }] };
+    return { A: [{ bed: '', order: '', done: false }], B: [{ bed: '', order: '', done: false }], H: [{ bed: '', order: '', done: false }] };
   }
   function saveNotes(n) { ls.set('roundNotes', n); }
 
@@ -29,7 +30,8 @@ window.Pages.todo = (function () {
         <h2><span class="${z.cls}">${esc(z.label)}</span></h2>
         <div class="rn-rows">
           ${(data[z.k] || []).map((r, i) => `
-            <div class="rn-row" data-i="${i}">
+            <div class="rn-row ${r.done ? 'done' : ''}" data-i="${i}">
+              <button class="rn-check todo-check ${r.done ? 'done' : ''}" aria-label="完成">✓</button>
               <input class="rn-bed" inputmode="numeric" placeholder="床號" value="${esc(r.bed || '')}">
               <input class="rn-ord" placeholder="醫囑內容" value="${esc(r.order || '')}">
               <button class="rn-del" aria-label="刪除">✕</button>
@@ -50,16 +52,21 @@ window.Pages.todo = (function () {
         const ord = row.querySelector('.rn-ord');
         const upd = () => {
           const n = notes();
-          n[k][i] = { bed: bed.value, order: ord.value };
+          n[k][i] = { bed: bed.value, order: ord.value, done: !!(n[k][i] && n[k][i].done) };
           saveNotes(n);
         };
         bed.addEventListener('input', upd);
         ord.addEventListener('input', upd);
         ord.addEventListener('focus', () => { lastOrd = ord; });
+        row.querySelector('.rn-check').addEventListener('click', () => {
+          const n = notes();
+          n[k][i] = { bed: bed.value, order: ord.value, done: !(n[k][i] && n[k][i].done) };
+          saveNotes(n); renderRounds();
+        });
         row.querySelector('.rn-del').addEventListener('click', () => {
           const n = notes();
           n[k].splice(i, 1);
-          if (!n[k].length) n[k] = [{ bed: '', order: '' }];
+          if (!n[k].length) n[k] = [{ bed: '', order: '', done: false }];
           saveNotes(n); renderRounds();
         });
       });
@@ -68,14 +75,15 @@ window.Pages.todo = (function () {
         b.addEventListener('click', () => {
           const t = b.dataset.t;
           const cur = lastOrd.value.trim();
-          lastOrd.value = cur ? cur + '、' + t : t;
+          const glue = NOSEP.indexOf(t) >= 0 ? '' : '、';
+          lastOrd.value = cur ? cur + glue + t : t;
           lastOrd.dispatchEvent(new Event('input'));
           lastOrd.focus();
         }));
 
       zc.querySelector('.rn-add').addEventListener('click', () => {
         const n = notes();
-        n[k].push({ bed: '', order: '' });
+        n[k].push({ bed: '', order: '', done: false });
         saveNotes(n); renderRounds();
         const rows = root.querySelector(`.rn-zone[data-z="${k}"]`).querySelectorAll('.rn-bed');
         rows[rows.length - 1].focus();

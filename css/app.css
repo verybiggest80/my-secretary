@@ -542,7 +542,9 @@ body {
 .rn-zone h2 { font-size: 1.05rem; }
 .rn-rows { display: flex; flex-direction: column; gap: 8px; }
 .rn-row { display: flex; gap: 8px; align-items: center; }
-.rn-row .rn-bed { flex: 0 0 68px; }
+.rn-row .rn-check { flex: 0 0 auto; cursor: pointer; }
+.rn-row .rn-bed { flex: 0 0 60px; }
+.rn-row.done .rn-bed, .rn-row.done .rn-ord { text-decoration: line-through; color: var(--text-2); opacity: .7; }
 .rn-row .rn-ord { flex: 1; min-width: 0; }
 .rn-row input {
   border: 1px solid var(--border); background: var(--bg); color: var(--text);
