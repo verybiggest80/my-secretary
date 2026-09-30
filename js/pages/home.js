@@ -113,12 +113,14 @@ window.Pages.home = (function () {
           const day = target.getDate();
           const pairs = (md.cover && md.cover[day]) || [];
           const mine = pairs.filter((p) => p.by.includes(q) || q.includes(p.by));
+          /* 負責期間:days 指定特定日期(優先),或 from/to 區間 */
+          const inRule = (r) => (r.days ? r.days.indexOf(day) >= 0 : (day >= r.from && day <= r.to));
           /* 會診欄位日期前有 F → 當期負責的總醫師要幫忙會診 */
-          const hp = (md.consultHelper || []).find((r) => day >= r.from && day <= r.to);
+          const hp = (md.consultHelper || []).find(inRule);
           const helpConsult = (md.consultF || []).indexOf(day) >= 0 && !!hp &&
             (hp.name.includes(q) || q.includes(hp.name));
           /* 復大查房日期前有 F → 當期負責的總醫師要代查 */
-          const rh = (md.roundHelper || []).find((r) => day >= r.from && day <= r.to);
+          const rh = (md.roundHelper || []).find(inRule);
           const mineRounds = (!!rh && (rh.name.includes(q) || q.includes(rh.name)))
             ? (((md.vsDuty && md.vsDuty.rounds && md.vsDuty.rounds[day]) || []).filter((r) => r.f))
             : [];
@@ -129,7 +131,12 @@ window.Pages.home = (function () {
             msgs.push(`<div class="cover-msg">你${word}要代查喔! 區域是 <b>${esc(r.shift)}班</b>〈${regs}〉 <b>${esc(r.doctor)}</b></div>`);
           });
           if (helpConsult) msgs.push(`<div class="cover-msg">你${word}要幫忙會診喔!</div>`);
-          if (mine.length) msgs.push(`<div class="cover-msg">你${word}要Cover${mine.map((m) => esc(m.off)).join('、')}喔! 辛苦了!</div>`);
+          if (mine.length) {
+            /* 同一天可能被列為多筆 Cover,休假名單相同時只顯示一次 */
+            const offs = [];
+            mine.forEach((m) => { if (offs.indexOf(m.off) < 0) offs.push(m.off); });
+            msgs.push(`<div class="cover-msg">你${word}要Cover${offs.map(esc).join('、')}喔! 辛苦了!</div>`);
+          }
           if (!msgs.length) msgs.push(`<div class="cover-msg">${word}不用Cover別人，舒服!</div>`);
           body = msgs.join('');
         }
@@ -148,7 +155,7 @@ window.Pages.home = (function () {
       /* 病房CR:隔天有 CR teaching 時,給一則可複製的提醒 */
       const who = ((ls.get('realName', '') || '').trim()) || ((ls.get('userName', '') || '').trim());
       const d2 = target.getDate();
-      const crRule = md && (md.wardCR || []).find((r) => d2 >= r.from && d2 <= r.to);
+      const crRule = md && (md.wardCR || []).find((r) => (r.days ? r.days.indexOf(d2) >= 0 : (d2 >= r.from && d2 <= r.to)));
       const isWardCR = !!crRule && !!who && (crRule.name.includes(who) || who.includes(crRule.name));
       const notices = (!today && isWardCR && md && md.crNotices && md.crNotices[d2]) || [];
       const crBlock = notices.map((n, i) => `
