@@ -136,7 +136,7 @@ window.Pages.home = (function () {
           if (helpConsult) {
             fx.forEach((f) => {
               const who = f.vs ? String(f.vs).split('/')[0].replace(/\*$/, '') + '醫師' : '';
-              const where = f.where ? `(${esc(f.where)}${who ? '・' + esc(who) : ''})` : '';
+              const where = f.where ? ` (${esc(f.where)}${who ? '，' + esc(who) : ''})` : '';
               msgs.push(`<div class="cover-msg">你${word}要幫忙會診喔!${where}</div>`);
             });
           }
