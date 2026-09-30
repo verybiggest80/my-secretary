@@ -573,3 +573,9 @@ body {
   border: none; background: var(--accent); color: #fff; border-radius: 14px;
   padding: 5px 12px; font-size: .8rem; font-weight: 600; cursor: pointer; flex: 0 0 auto;
 }
+
+/* 復大分區:解釋 CXR 提示 */
+.rz-cxr {
+  margin-left: 8px; font-size: .72rem; font-weight: 700; color: #fff; background: var(--warn);
+  border-radius: 8px; padding: 1px 7px; text-transform: none; letter-spacing: 0;
+}

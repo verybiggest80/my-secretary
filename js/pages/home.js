@@ -117,8 +117,11 @@ window.Pages.home = (function () {
           const inRule = (r) => (r.days ? r.days.indexOf(day) >= 0 : (day >= r.from && day <= r.to));
           /* 會診欄位日期前有 F → 當期負責的總醫師要幫忙會診 */
           const hp = (md.consultHelper || []).find(inRule);
-          const helpConsult = (md.consultF || []).indexOf(day) >= 0 && !!hp &&
-            (hp.name.includes(q) || q.includes(hp.name));
+          const isHelper = !!hp && (hp.name.includes(q) || q.includes(hp.name));
+          /* consultFx:{日: [{where, vs}]};舊格式 consultF 只有日期 */
+          const fx = (md.consultFx && md.consultFx[day]) ||
+            ((md.consultF || []).indexOf(day) >= 0 ? [{}] : []);
+          const helpConsult = isHelper && fx.length > 0;
           /* 復大查房日期前有 F → 當期負責的總醫師要代查 */
           const rh = (md.roundHelper || []).find(inRule);
           const mineRounds = (!!rh && (rh.name.includes(q) || q.includes(rh.name)))
@@ -130,7 +133,13 @@ window.Pages.home = (function () {
             const regs = String(r.region).split('〉和〈').map(fixRegion).map(esc).join('〉和〈');
             msgs.push(`<div class="cover-msg">你${word}要代查喔! 區域是 <b>${esc(r.shift)}班</b>〈${regs}〉 <b>${esc(r.doctor)}</b></div>`);
           });
-          if (helpConsult) msgs.push(`<div class="cover-msg">你${word}要幫忙會診喔!</div>`);
+          if (helpConsult) {
+            fx.forEach((f) => {
+              const who = f.vs ? String(f.vs).split('/')[0].replace(/\*$/, '') + '醫師' : '';
+              const where = f.where ? `(${esc(f.where)}${who ? '・' + esc(who) : ''})` : '';
+              msgs.push(`<div class="cover-msg">你${word}要幫忙會診喔!${where}</div>`);
+            });
+          }
           if (mine.length) {
             /* 同一天可能被列為多筆 Cover,休假名單相同時只顯示一次 */
             const offs = [];

@@ -64,7 +64,8 @@ window.Pages.work = (function () {
     const shifts = [];
     list.forEach((r) => {
       let sh = shifts.find((x) => x.shift === r.shift);
-      if (!sh) { sh = { shift: r.shift, docs: [] }; shifts.push(sh); }
+      if (!sh) { sh = { shift: r.shift, docs: [], cxr: false }; shifts.push(sh); }
+      if (r.x) sh.cxr = true;   /* 班表日期前有 X:當天查房要解釋 CXR */
       /* 同醫師但「代查/非代查」要分開列,否則標記會套到不該套的格子 */
       const fg = !!r.f;
       let dc = sh.docs.find((x) => x.name === r.doctor && x.f === fg);
@@ -263,7 +264,7 @@ window.Pages.work = (function () {
     zc.innerHTML = `<h2>🏥 復大分區<span style="font-weight:400;color:var(--text-2);font-size:.85rem"> ${target.getMonth() + 1}/${target.getDate()}</span></h2>` +
       (zones.length
         ? zones.map((s2) => `
-          <div class="section-label" style="margin:12px 0 6px">${esc(s2.shift)} 班</div>
+          <div class="section-label" style="margin:12px 0 6px">${esc(s2.shift)} 班${s2.cxr ? '<span class="rz-cxr">解釋CXR</span>' : ''}</div>
           ${s2.docs.map((d2) => `
             <div class="rz-row">
               ${isResident
