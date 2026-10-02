@@ -579,3 +579,9 @@ body {
   margin-left: 8px; font-size: .72rem; font-weight: 700; color: #fff; background: var(--warn);
   border-radius: 8px; padding: 1px 7px; text-transform: none; letter-spacing: 0;
 }
+
+/* Cover 卡片:可點的主治醫師姓名(查看帳密) */
+.cv-link {
+  border: none; background: none; padding: 0; font: inherit; font-weight: 700;
+  color: inherit; border-bottom: 1px dashed currentColor; cursor: pointer;
+}

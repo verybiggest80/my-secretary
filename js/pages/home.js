@@ -131,12 +131,12 @@ window.Pages.home = (function () {
           const msgs = [];
           mineRounds.forEach((r) => {
             const regs = String(r.region).split('〉和〈').map(fixRegion).map(esc).join('〉和〈');
-            msgs.push(`<div class="cover-msg">你${word}要代查喔! 區域是 <b>${esc(r.shift)}班</b>〈${regs}〉 <b>${esc(r.doctor)}</b></div>`);
+            msgs.push(`<div class="cover-msg">你${word}要代查喔! 區域是 <b>${esc(r.shift)}班</b>〈${regs}〉 <button class="cv-link" data-doc="${esc(r.doctor)}">${esc(r.doctor)}</button></div>`);
           });
           if (helpConsult) {
             fx.forEach((f) => {
               const who = f.vs ? String(f.vs).split('/')[0].replace(/\*$/, '') + '醫師' : '';
-              const where = f.where ? ` (${esc(f.where)}${who ? '，' + esc(who) : ''})` : '';
+              const where = f.where ? ` (區域: ${esc(f.where)}${who ? '，' + esc(who) : ''})` : '';
               msgs.push(`<div class="cover-msg">你${word}要幫忙會診喔!${where}</div>`);
             });
           }
@@ -277,6 +277,17 @@ window.Pages.home = (function () {
         try { document.execCommand('copy'); } catch (err) {}
         ta.remove(); done();
       }
+    }));
+
+    /* Cover 卡片:代查的主治醫師姓名可點,顯示帳密(帳密介面在會診頁的腳本內) */
+    root.querySelectorAll('.cv-link').forEach((b) => b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = () => window.CredUI && window.CredUI.open(b.dataset.doc);
+      if (window.CredUI) return open();
+      const sc = document.createElement('script');
+      sc.src = 'js/pages/work.js';
+      sc.onload = open;
+      document.head.appendChild(sc);
     }));
 
     /* Cover 卡片:今天/明天切換 */

@@ -585,6 +585,13 @@ window.Pages.work = (function () {
     window.scrollTo(0, 0);
   }
 
+  /* 從其他分頁(如首頁 Cover 卡片)開啟時,先切到會診頁再進編輯畫面 */
+  function goEditor(name) {
+    const onWork = root && root.classList && root.classList.contains('active');
+    if (onWork || !window.navigateTo) { credEditor(name); return; }
+    window.navigateTo('work').then(() => credEditor(name));
+  }
+
   /* 復大分區點擊姓名 → 疊層顯示該醫師帳密 */
   function credOverlay(name) {
     const back = document.createElement('div');
@@ -611,7 +618,7 @@ window.Pages.work = (function () {
         box.innerHTML = `<h3>${esc(name)}</h3>
           <div class="cv-hint">尚未建立這位醫師的帳密</div>
           <button class="btn-primary" id="cv-new">去新增</button>`;
-        box.querySelector('#cv-new').addEventListener('click', () => { close(); credEditor(''); });
+        box.querySelector('#cv-new').addEventListener('click', () => { close(); goEditor(''); });
         return;
       }
       box.innerHTML = `
@@ -633,12 +640,14 @@ window.Pages.work = (function () {
           b.textContent = '已複製';
           setTimeout(() => { b.textContent = '複製'; }, 1200);
         }));
-      box.querySelector('#cv-edit').addEventListener('click', () => { close(); credEditor(it.name); });
+      box.querySelector('#cv-edit').addEventListener('click', () => { close(); goEditor(it.name); });
       box.querySelector('#cv-close').addEventListener('click', close);
     }
     draw();
     document.body.appendChild(back);
   }
+
+  window.CredUI = { open: (name) => credOverlay(name) };
 
   /* PDF:App 內以 iframe 預覽,另提供以其他 App 開啟 */
   function renderPdfViewer(f, url) {
