@@ -138,8 +138,24 @@ window.ScheduleData = {
       },
       icuMed:  [],
       icuSurg: [],
-      /* 會診欄位 F 標記(總醫師協助):where=一般病房/ICU,vs=該格主治醫師;待班表更新 */
-      consultFx: {},
+      /* 會診欄位 F 標記(總醫師協助):where=一般病房/ICU,vs=該格主治醫師 */
+      consultFx: {
+        2: [{ where: "ICU", vs: "傅崇銘" }],
+        5: [{ where: "一般病房", vs: "劉庭均/王麒翔*" }],
+        6: [{ where: "一般病房", vs: "劉志翰" }],
+        7: [{ where: "ICU", vs: "王劭璿" }],
+        8: [{ where: "ICU", vs: "許淳惟" }],
+        12: [{ where: "ICU", vs: "王韋婷/王劭璿*" }],
+        13: [{ where: "一般病房", vs: "林均叡" }],
+        15: [{ where: "一般病房", vs: "王麒翔" }],
+        21: [{ where: "ICU", vs: "王振宇" }],
+        22: [{ where: "ICU", vs: "黃鏘綺" }],
+        23: [{ where: "ICU", vs: "李宜蓉" }],
+        27: [{ where: "ICU", vs: "賴弘強" }],
+        28: [{ where: "ICU", vs: "蔡凱帆" }],
+        29: [{ where: "ICU", vs: "周嘉安" }],
+        30: [{ where: "ICU", vs: "郭韋宏" }]
+      },
       consultHelper: [{ from: 1, to: 31, name: "郭坤宙" }],
       /* 復健大樓代查:許瑞廷全月,2、5、14、20、28 由郭坤宙 */
       roundHelper: [
