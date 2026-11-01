@@ -19,6 +19,23 @@ window.ScheduleData = {
         "files/schedule-2026-11/p7.jpg",
         "files/schedule-2026-11/p8.jpg"
       ]
+    },
+    {
+      title: "大內科班表",
+      label: "11月大內科班表",
+      month: "2026-11",
+      file: "files/medicine-2026-11.xlsx",
+      pages: [
+        "files/medicine-2026-11/p1.jpg",
+        "files/medicine-2026-11/p2.jpg",
+        "files/medicine-2026-11/p3.jpg",
+        "files/medicine-2026-11/p4.jpg",
+        "files/medicine-2026-11/p5.jpg",
+        "files/medicine-2026-11/p6.jpg",
+        "files/medicine-2026-11/p7.jpg",
+        "files/medicine-2026-11/p8.jpg",
+        "files/medicine-2026-11/p9.jpg"
+      ]
     }
   ],
   /* 各月份資料;App 會依當下日期自動選用對應月份 */
@@ -123,17 +140,16 @@ window.ScheduleData = {
         24: "林均叡", 25: "許淳惟", 26: "林均叡", 27: "傅崇銘", 30: "王振宇"
       },
       licu: "李隆志",
-      /* 值班:B 班;oncallFromA 這幾天班表沒有 B 班,改列 A 班主治 */
+      /* 值班:B 班;班表沒有 B 班的日子是主治一人兼 A、B 班,直接列該主治 */
       oncallB: {
         1: "王劭璿", 2: "許淳惟", 3: "賴弘強", 4: "王振宇", 5: "劉庭均", 6: "周嘉安", 7: "王振宇", 8: "林均叡",
         9: "傅崇銘", 10: "賴弘強", 11: "王韋婷", 12: "王振宇", 13: "王麒翔", 14: "蔡凱帆", 15: "傅崇銘", 16: "賴弘強",
         17: "王劭璿", 18: "劉庭均", 19: "賴弘強", 20: "王劭璿", 21: "王麒翔", 22: "周嘉安", 23: "蔡凱帆", 24: "王麒翔",
         25: "王韋婷", 26: "王劭璿", 27: "許淳惟", 28: "王韋婷", 29: "王振宇", 30: "王麒翔"
       },
-      oncallFromA: [1, 3, 4, 11, 13, 17, 19, 29, 30],
       icuMed:  [],
       icuSurg: [],
-      /* 會診欄位 F 標記(總醫師協助):本月班表尚無 F */
+      /* 本月會診由住院醫師負責,不會有 F 標記(總醫師協助) */
       consultFx: {},
       consultHelper: [],
       /* 復健大樓代查:郭坤宙全月,11/24、11/27 由許瑞廷 */
