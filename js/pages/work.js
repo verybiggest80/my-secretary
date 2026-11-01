@@ -110,6 +110,10 @@ window.Pages.work = (function () {
     if (smd) {
       oncall = findDoc(smd.oncallB[shifted.getDate()], smd);
       if (shifted.getDate() !== d) oncallNote = `${shifted.getMonth() + 1}/${shifted.getDate()} 值班・07:30 交接`;
+      /* 班表當天沒有 B 班時,資料改列 A 班主治,這裡註明 */
+      if ((smd.oncallFromA || []).indexOf(shifted.getDate()) >= 0) {
+        oncallNote = (oncallNote ? oncallNote + '・' : '') + '班表無B班,此為A班主治';
+      }
     } else {
       oncall = findDoc(null, md);
       oncallNote = '前一日班表資料不存在';
