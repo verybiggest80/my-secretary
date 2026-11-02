@@ -843,6 +843,11 @@ window.Pages.work = (function () {
         <h3>Polyuria</h3>
         <div class="tile-icon">🧭</div>
         <div class="tile-sub">Interactive work-up</div>
+      </div>
+      <div class="tile square dx-tile" id="dx-hyperK">
+        <h3>Hyperkalemia</h3>
+        <div class="tile-icon">🧭</div>
+        <div class="tile-sub">Interactive work-up</div>
       </div>`;
     root.appendChild(grid);
     grid.querySelector('#h-ff').addEventListener('click', renderCRRT);
@@ -853,7 +858,7 @@ window.Pages.work = (function () {
     grid.querySelector('#h-mala').addEventListener('click', renderMala);
     grid.querySelector('#h-di').addEventListener('click', renderDI);
     grid.querySelector('#h-hypona').addEventListener('click', renderHypoNaTx);
-    ['hypoNa', 'hyperNa', 'hyperCa', 'hypoCa', 'polyuria'].forEach((k) =>
+    ['hypoNa', 'hyperNa', 'hyperCa', 'hypoCa', 'polyuria', 'hyperK'].forEach((k) =>
       grid.querySelector('#dx-' + k).addEventListener('click', () => renderDx(k)));
   }
 
@@ -1444,18 +1449,18 @@ window.Pages.work = (function () {
           html += `<div class="dx-q">${esc(node.q)}</div>`;
           if (node.note) html += `<div class="dx-note">${esc(node.note)}</div>`;
           html += `<div class="dx-options">` +
-            node.options.map((o, i) => `<button class="dx-opt" data-i="${i}">${esc(o.label)}</button>`).join('') +
+            node.options.map((o, i) => `<button class="dx-opt${o.info ? ' dx-info' : ''}" data-i="${i}">${esc(o.label)}</button>`).join('') +
             `</div>`;
         }
         if (node.dx) {
           html += `<div class="dx-result">
-            <div class="dx-dx">🎯 ${esc(node.dx)}</div>
+            <div class="dx-dx">${node.icon || '🎯'} ${esc(node.dx)}</div>
             ${node.detail ? `<div class="dx-detail">${esc(node.detail)}</div>` : ''}
             <ul class="dx-tests">${(node.tests || []).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
           </div>`;
           if (node.options) {
             html += `<div class="dx-options">` +
-              node.options.map((o, i) => `<button class="dx-opt" data-i="${i}">${esc(o.label)}</button>`).join('') +
+              node.options.map((o, i) => `<button class="dx-opt${o.info ? ' dx-info' : ''}" data-i="${i}">${esc(o.label)}</button>`).join('') +
               `</div>`;
           }
           if (node.link) {

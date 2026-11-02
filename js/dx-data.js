@@ -1,7 +1,8 @@
 /* dx-data.js — Interactive diagnostic decision trees for electrolyte disorders.
    Structure follows standard UpToDate / clinical guideline algorithms.
    Each disorder = { title, subtitle, root, nodes:{ id:{ step, q, note, options:[{label,next}], dx, detail, tests:[] } } }
-   A node with `options` renders as a question; a node with `dx` renders as an endpoint (may still branch). */
+   A node with `options` renders as a question; a node with `dx` renders as an endpoint (may still branch).
+   Optional: node.icon replaces the 🎯 on endpoints; option.info = true styles the button as a "view list" link. */
 window.DxData = {
 
   /* ============ HYPONATREMIA ============ */
@@ -515,6 +516,242 @@ window.DxData = {
           "Polyuria abolished but thirst/polydipsia persist and hyponatremia develops \u2192 primary polydipsia",
           "No effect even when given by injection \u2192 nephrogenic DI",
           "\u26a0\ufe0f Check serum Na\u207a within a few days to avoid severe hyponatremia"
+        ]
+      }
+    }
+  },
+
+  /* ============ HYPERKALEMIA ============ */
+  /* 依 Ch17 Disorders of Potassium Balance — Fig. 17.15 The clinical approach to hyperkalemia */
+  hyperK: {
+    title: "Hyperkalemia",
+    subtitle: "Serum K⁺ ≥ 5.5 mmol/L — clinical approach (Fig. 17.15)",
+    root: "emerg",
+    nodes: {
+      emerg: {
+        step: "Step 1",
+        q: "Does the patient need emergency therapy?",
+        note: "K⁺ ≥ 6.0 mmol/L or any ECG change → treat first, then come back for the work-up.",
+        options: [
+          { label: "Yes — K⁺ ≥ 6.0 or ECG changes", next: "emergTx" },
+          { label: "No", next: "pseudo" }
+        ]
+      },
+      emergTx: {
+        icon: "🚨",
+        dx: "Emergency therapy",
+        detail: "12-lead ECG and admission with continuous ECG monitoring. Treat in three steps:",
+        tests: [
+          "① Stabilize the myocardium — 10% calcium gluconate 10 mL IV over 2–3 min (onset 1–3 min, lasts 30–60 min); repeat if the ECG does not improve. On digoxin: dilute in 100 mL D5W over 20–30 min. Never give in a bicarbonate-containing line.",
+          "② Shift K⁺ into cells — regular insulin 10 U IV + 50 mL D50W (25 g glucose): onset 10–20 min, peak 30–60 min, lasts 4–6 h, lowers K⁺ 0.5–1.2 mmol/L. Watch for hypoglycemia (D10W 50–75 mL/h); if glucose ≥ 200–250 mg/dL give insulin without glucose.",
+          "② Nebulized albuterol 10–20 mg over 10 min — additive to insulin, but never use alone (20–40% of ESKD patients do not respond).",
+          "② Sodium bicarbonate — no acute K⁺-lowering effect; consider (isotonic) only with severe acidemia.",
+          "③ Remove K⁺ — loop (± thiazide) diuretic if the patient still makes urine.",
+          "③ K⁺ binders — patiromer or sodium zirconium cyclosilicate preferred over SPS (SPS works only after ≥ 4–6 h and risks intestinal necrosis).",
+          "③ Hemodialysis — definitive removal in advanced kidney failure or refractory hyperkalemia."
+        ],
+        options: [{ label: "Continue the work-up → pseudohyperkalemia?", next: "pseudo" }]
+      },
+
+      pseudo: {
+        step: "Step 2",
+        q: "Could this be pseudohyperkalemia?",
+        note: "Artifactual K⁺ release during or after venipuncture. Tap the list to review the causes.",
+        options: [
+          { label: "📋 Causes of pseudohyperkalemia", next: "pseudoCauses", info: true },
+          { label: "Yes — pseudohyperkalemia", next: "pseudoYes" },
+          { label: "No — true hyperkalemia", next: "hx" }
+        ]
+      },
+      pseudoCauses: {
+        icon: "📋",
+        dx: "Causes of pseudohyperkalemia",
+        tests: [
+          "Fist clenching, forearm contraction or tourniquet during the draw",
+          "Thrombocytosis, leukocytosis or erythrocytosis (K⁺ released from blood cells)",
+          "Acute anxiety → hyperventilation (respiratory alkalosis) at venipuncture",
+          "K⁺-EDTA contamination of the sample (clue: spuriously low Ca²⁺ / Mg²⁺)",
+          "Pneumatic-tube transport (e.g., leukemia with marked leukocytosis)",
+          "Cooling of the blood before cells are separated (seasonal swings in off-site samples)",
+          "Hereditary red-cell K⁺ leak — familial pseudohyperkalemia / stomatocytosis"
+        ],
+        options: [
+          { label: "Yes — pseudohyperkalemia", next: "pseudoYes" },
+          { label: "No — true hyperkalemia", next: "hx" }
+        ]
+      },
+      pseudoYes: {
+        icon: "✅",
+        dx: "Pseudohyperkalemia — no further action",
+        detail: "Repeat a carefully drawn sample: no fist clenching, brief tourniquet, prompt processing without cooling.",
+        tests: ["With very high cell counts, compare with a plasma (heparinized) or blood-gas K⁺"]
+      },
+
+      hx: {
+        step: "Step 3",
+        q: "History, physical examination & basic laboratory tests",
+        note: "Ask about medications, diet & supplements (salt substitutes), kidney-failure risk and urine output; check BP and volume status. Labs: electrolytes, urea, creatinine, plasma Osm, Mg²⁺, Ca²⁺, CBC; urine pH, Osm, creatinine & electrolytes.",
+        options: [
+          { label: "💊 Medication history — drugs that raise K⁺", next: "meds", info: true },
+          { label: "Evidence of increased potassium load", next: "load" },
+          { label: "Evidence of transcellular shift", next: "shift" },
+          { label: "Neither — check urinary K⁺ excretion", next: "uk" }
+        ]
+      },
+      meds: {
+        icon: "💊",
+        dx: "Medications that cause hyperkalemia",
+        detail: "Risk is highest with CKD, diabetes, heart failure, older age and drug combinations (e.g., TMP-SMX with an ACE-I, ARB or spironolactone).",
+        tests: [
+          "K⁺ load — KCl supplements or over-replacement, K⁺ penicillin, salt substitutes, herbal remedies",
+          "Shift out of cells — β-blockers (esp. labetalol), digoxin toxicity, succinylcholine, ε-aminocaproic acid, arginine/lysine infusion, mannitol or hypertonic saline, octreotide, K_ATP openers (cyclosporine, isoflurane, nicorandil)",
+          "↓ Renin / aldosterone — NSAIDs & COX-2 inhibitors, β-blockers, aliskiren, ACE inhibitors, ARBs, heparin & LMWH, ketoconazole",
+          "Mineralocorticoid-receptor blockade — spironolactone, eplerenone, canrenone, drospirenone (oral contraceptive)",
+          "ENaC blockade — amiloride, triamterene, trimethoprim (TMP-SMX), pentamidine, nafamostat",
+          "Calcineurin inhibitors (cyclosporine, tacrolimus) — several mechanisms: ↓ renin/aldosterone, ↓ distal K⁺ secretion and K⁺ shift"
+        ]
+      },
+      load: {
+        icon: "📋",
+        dx: "Increased potassium load",
+        detail: "Even a small load can cause marked hyperkalemia when renal excretion is impaired.",
+        tests: [
+          "Exogenous — KCl supplements or over-replacement, K⁺-containing drugs (K⁺ penicillin), salt substitutes, herbal/alternative remedies & diets, high-K⁺ foods, large volumes of sports drinks",
+          "Pica in dialysis patients — K⁺-rich clay, burnt matchsticks",
+          "Red-cell transfusion — massive or rapid transfusion, central or pressure infusion, irradiated or old stored blood",
+          "Endogenous release — rhabdomyolysis, acute tumor lysis, severe trauma"
+        ],
+        options: [
+          { label: "🥗 High-potassium foods", next: "foods", info: true },
+          { label: "Yes → treat accordingly & re-evaluate", next: "loadYes" },
+          { label: "No → look for transcellular shift", next: "shift" }
+        ]
+      },
+      foods: {
+        icon: "🥗",
+        dx: "Foods with high potassium content",
+        tests: [
+          "Highest (> 1000 mg / 100 g) — dried figs, molasses, seaweed",
+          "Very high (> 500 mg / 100 g) — dried fruits (dates, prunes), nuts, avocados, bran cereals, wheat germ, lima beans",
+          "High (> 250 mg / 100 g), vegetables — spinach, tomatoes, broccoli, winter squash, beets, carrots, cauliflower, potatoes",
+          "High (> 250 mg / 100 g), fruits — bananas, cantaloupe, kiwis, oranges, mangos",
+          "High (> 250 mg / 100 g), meats — ground beef, steak, pork, veal, lamb"
+        ]
+      },
+      loadYes: {
+        icon: "🔁",
+        dx: "Treat accordingly and re-evaluate",
+        detail: "Stop the exogenous source or treat the tissue breakdown, then recheck K⁺.",
+        options: [{ label: "Still high → check urinary K⁺ excretion", next: "uk" }]
+      },
+      shift: {
+        icon: "📋",
+        dx: "Transcellular shift (K⁺ moves out of cells)",
+        tests: [
+          "Hypertonicity — mannitol, hypertonic saline, hyperglycemia, IV contrast in CKD/dialysis patients",
+          "Insulin deficiency — uncontrolled diabetes / DKA, prolonged fasting in dialysis patients, octreotide",
+          "Metabolic acidosis (non-organic / mineral acid)",
+          "Drugs — digoxin, β-blockers, succinylcholine (burns, denervation, prolonged immobilization), ε-aminocaproic acid, arginine/lysine infusion, K_ATP openers (cyclosporine, isoflurane, nicorandil)",
+          "Toxins — cane-toad venom (some herbal aphrodisiacs), fluoride poisoning",
+          "Exercise (usually transient)",
+          "Hyperkalemic periodic paralysis"
+        ],
+        options: [
+          { label: "Yes → treat accordingly & re-evaluate", next: "shiftYes" },
+          { label: "No → check urinary K⁺ excretion", next: "uk" }
+        ]
+      },
+      shiftYes: {
+        icon: "🔁",
+        dx: "Treat accordingly and re-evaluate",
+        detail: "Correct the cause of the shift (e.g., insulin, stop the drug, treat the acidosis), then recheck K⁺.",
+        options: [{ label: "Still high → check urinary K⁺ excretion", next: "uk" }]
+      },
+
+      uk: {
+        step: "Step 4",
+        q: "Decreased urinary K⁺ excretion (< 40 mmol/day) — check urine electrolytes",
+        note: "Urine Na⁺ shows whether distal Na⁺ delivery is limiting K⁺ secretion.",
+        options: [
+          { label: "Urine Na⁺ < 25 mmol/L", next: "distalNa" },
+          { label: "Urine Na⁺ ≥ 25 mmol/L → calculate TTKG", next: "ttkg" }
+        ]
+      },
+      distalNa: {
+        dx: "Decreased distal Na⁺ delivery",
+        detail: "Prerenal physiology limits distal Na⁺ delivery and flow, so K⁺ secretion falls.",
+        tests: [
+          "Volume depletion",
+          "Heart failure (low effective circulating volume)",
+          "Correct the prerenal state, then reassess K⁺ and urine Na⁺"
+        ]
+      },
+      ttkg: {
+        step: "Step 5",
+        q: "Transtubular K⁺ gradient (TTKG)",
+        note: "TTKG = (urine K⁺ ÷ plasma K⁺) ÷ (urine Osm ÷ plasma Osm). Expected > 6–7 during hyperkalemia; 5–8 is borderline. Interpret only when urine Na⁺ ≥ 25 mmol/L and urine Osm ≥ plasma Osm.",
+        options: [
+          { label: "TTKG > 8", next: "flow" },
+          { label: "TTKG < 5", next: "fludro" }
+        ]
+      },
+      flow: {
+        dx: "Reduced tubular flow",
+        detail: "Distal K⁺ secretion is working (high TTKG), but too little flow / GFR limits total K⁺ excretion.",
+        tests: [
+          "Advanced kidney failure (GFR ≤ 20 mL/min)",
+          "Reduced effective circulating volume (ECV)"
+        ]
+      },
+      fludro: {
+        step: "Step 6",
+        q: "Reduced distal K⁺ secretion (GFR > 20 mL/min) — fludrocortisone test",
+        note: "Give fludrocortisone and repeat the TTKG after a few hours; plasma renin and aldosterone also help.",
+        options: [
+          { label: "TTKG still < 8 → tubular resistance", next: "resist" },
+          { label: "TTKG rises to ≥ 8 → low aldosterone", next: "renin" }
+        ]
+      },
+      resist: {
+        dx: "Tubular resistance to aldosterone",
+        tests: [
+          "Drugs — amiloride, triamterene, spironolactone, eplerenone, trimethoprim, pentamidine, calcineurin inhibitors",
+          "Tubulointerstitial diseases",
+          "Urinary tract obstruction",
+          "Pseudohypoaldosteronism type I and type II",
+          "Sickle cell disease",
+          "SLE",
+          "Renal transplant"
+        ]
+      },
+      renin: {
+        step: "Step 7",
+        q: "Low aldosterone — what is the plasma renin?",
+        options: [
+          { label: "High renin", next: "highRenin" },
+          { label: "Low renin", next: "lowRenin" }
+        ]
+      },
+      highRenin: {
+        dx: "Low aldosterone with high renin",
+        tests: [
+          "Primary adrenal insufficiency (autoimmune Addison disease, adrenal hemorrhage, HIV/CMV adrenalitis)",
+          "Isolated aldosterone deficiency (aldosterone-synthase defect, critical illness)",
+          "Heparin / LMWH",
+          "ACE inhibitors / ARBs",
+          "Ketoconazole"
+        ]
+      },
+      lowRenin: {
+        dx: "Hyporeninemic hypoaldosteronism",
+        tests: [
+          "Diabetes mellitus",
+          "Acute glomerulonephritis",
+          "Tubulointerstitial diseases",
+          "Pseudohypoaldosteronism type II (Gordon syndrome / FHHt)",
+          "NSAIDs (incl. COX-2 inhibitors)",
+          "β-blockers",
+          "Also common in older adults and CKD; described in SLE and multiple myeloma"
         ]
       }
     }

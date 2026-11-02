@@ -585,3 +585,8 @@ body {
   border: none; background: none; padding: 0; font: inherit; font-weight: 700;
   color: inherit; border-bottom: 1px dashed currentColor; cursor: pointer;
 }
+
+/* 診斷流程:「點開看清單」類選項 */
+.dx-opt.dx-info {
+  background: var(--accent-soft); border-style: dashed; color: var(--accent); font-weight: 600;
+}
