@@ -168,12 +168,13 @@ window.Pages.home = (function () {
       const isWardCR = !!crRule && !!who && (crRule.name.includes(who) || who.includes(crRule.name));
       const base = (!today && isWardCR && md && md.crNotices && md.crNotices[d2]) || [];
       /* 晨會Seminar:依當天會議資料自動產生提醒(標題/時間/主講跟著會議表走;crNotices 內若已有 Seminar 則以資料為準) */
+      const dlab = `${target.getMonth() + 1}/${target.getDate()}(${'日一二三四五六'[target.getDay()]})`;
       const semi = (!today && isWardCR && !base.some((n) => /Seminar/i.test(n.label || '')))
         ? list.filter((m) => /晨會\s*Seminar/i.test(m.title || '')).map((m) => ({
             label: '晨會Seminar',
             text: '<晨會Seminar (附餐)>\n'
               + `標題: ${(m.title || '').replace(/^.*?晨會\s*Seminar\s*[-–—:：]?\s*/i, '')}\n`
-              + `時間: ${(m.time || '07:30-08:30').replace(/\s*[-–~]\s*/, '~')}\n`
+              + `時間: ${dlab} ${(m.time || '07:30-08:30').replace(/\s*[-–~]\s*/, '~')}\n`
               + `主講: ${m.speaker || ''}`
           }))
         : [];
