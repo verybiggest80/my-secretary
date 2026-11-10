@@ -161,12 +161,23 @@ window.Pages.home = (function () {
       const md = monthData(target);
       const list = (md && md.meetings && md.meetings[target.getDate()]) || [];
 
-      /* 病房CR:隔天有 CR teaching 時,給一則可複製的提醒 */
+      /* 病房CR:隔天有 CR teaching / 晨會等活動時,給可複製的提醒 */
       const who = ((ls.get('realName', '') || '').trim()) || ((ls.get('userName', '') || '').trim());
       const d2 = target.getDate();
       const crRule = md && (md.wardCR || []).find((r) => (r.days ? r.days.indexOf(d2) >= 0 : (d2 >= r.from && d2 <= r.to)));
       const isWardCR = !!crRule && !!who && (crRule.name.includes(who) || who.includes(crRule.name));
-      const notices = (!today && isWardCR && md && md.crNotices && md.crNotices[d2]) || [];
+      const base = (!today && isWardCR && md && md.crNotices && md.crNotices[d2]) || [];
+      /* 晨會Seminar:依當天會議資料自動產生提醒(標題/時間/主講跟著會議表走;crNotices 內若已有 Seminar 則以資料為準) */
+      const semi = (!today && isWardCR && !base.some((n) => /Seminar/i.test(n.label || '')))
+        ? list.filter((m) => /晨會\s*Seminar/i.test(m.title || '')).map((m) => ({
+            label: '晨會Seminar',
+            text: '<晨會Seminar (附餐)>\n'
+              + `標題: ${(m.title || '').replace(/^.*?晨會\s*Seminar\s*[-–—:：]?\s*/i, '')}\n`
+              + `時間: ${(m.time || '07:30-08:30').replace(/\s*[-–~]\s*/, '~')}\n`
+              + `主講: ${m.speaker || ''}`
+          }))
+        : [];
+      const notices = base.concat(semi);
       const crBlock = notices.map((n, i) => `
         <div class="mt-cr">
           <span class="mt-cr-t">📣 提醒 ${esc(n.label)}</span>

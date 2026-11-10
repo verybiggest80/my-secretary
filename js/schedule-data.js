@@ -56,7 +56,7 @@ window.ScheduleData = {
           { time: "07:30-08:30", title: "內科晨會-X光影像判讀(4)-Abdomen", speaker: "陳祺承醫師", host: "卓姿佑/郭垣宏醫師", place: "12F內科討論室" },
           { time: "07:30-08:30", title: "科務會議", speaker: "李文欽主任", host: "李文欽主任", place: "3F會議室" }
         ],
-        11: [{ time: "07:30-08:30", title: "晨會Seminar-高血脂治療策略", speaker: "鄭本忠醫師", host: "黃富誠醫師", place: "3F會議室" }],
+        11: [{ time: "07:30-08:30", title: "晨會Seminar-高血脂治療策略", speaker: "陳典佑醫師&王振宇醫師", host: "黃富誠醫師", place: "3F會議室" }],
         12: [{ time: "07:30-08:30", title: "內科晨會-Mortality and Morbidity(6)(7)", speaker: "林致泰/顏哲軒醫師", host: "蕭喻心/郭垣宏醫師", place: "6F大禮堂" }],
         13: [
           { time: "07:30-08:30", title: "全院演講", speaker: "", host: "", place: "6F大禮堂" },
