@@ -136,16 +136,15 @@ window.Pages.work = (function () {
     };
   }
 
-  /* 腎超卡片:上午/下午各一列(姓名・代號・電話) */
+  /* 腎超卡片(正方形):上午/下午各一塊,姓名一行、代號與電話一行 */
   function echoTile(info, word) {
     const row = (slot, doc) => `
-      <div class="echo-row">
-        <span class="echo-slot">${slot}</span>
-        <span class="echo-name">${doc ? esc(doc.name) : '—'}</span>
-        ${doc ? `<span class="echo-meta">代號 <b>${esc(doc.code)}</b>・☎ <b>${esc(doc.phone)}</b></span>` : ''}
+      <div class="echo-blk">
+        <div class="echo-top"><span class="echo-slot">${slot}</span><span class="echo-name">${doc ? esc(doc.name) : '—'}</span></div>
+        ${doc ? `<div class="echo-meta">代號 <b>${esc(doc.code)}</b>・☎ <b>${esc(doc.phone)}</b></div>` : ''}
       </div>`;
     return `
-      <div class="tile bar echo-tile" id="w-echo">
+      <div class="tile square echo-tile" id="w-echo">
         <h3>${KIDNEY_SVG(17)} 腎超</h3>
         ${(info.echoAM || info.echoPM)
           ? `<div>${row('上午', info.echoAM)}${row('下午', info.echoPM)}</div>`
@@ -208,9 +207,10 @@ window.Pages.work = (function () {
         ${dayBar}
         <div class="tile-grid">
           ${tilesHtml}
-          <div class="tile bar" id="w-dir">
+          <div class="tile square" id="w-dir">
             <h3>📖 醫師通訊錄</h3>
-            <div class="tile-sub">點擊查看全部醫師(可搜尋姓名/代號/電話)</div>
+            <div class="tile-icon" style="font-size:2rem">📖</div>
+            <div class="tile-sub">搜尋姓名・代號・電話</div>
           </div>
           <div class="tile square" id="w-helper">
             <h3>${KIDNEY_SVG(17)} 臨床幫手</h3>

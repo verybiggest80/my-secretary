@@ -596,14 +596,15 @@ body {
 .w-daylab { font-size: .95rem; font-weight: 700; }
 .w-daylab.tm { color: var(--warn); }
 .w-daybar .cover-btn { margin-top: 0; }
-.echo-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; padding: 6px 0; }
-.echo-row + .echo-row { border-top: 1px solid var(--border); }
+.echo-blk { padding: 5px 0; }
+.echo-blk + .echo-blk { border-top: 1px solid var(--border); }
+.echo-top { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 6px; }
 .echo-slot {
-  flex: 0 0 auto; font-size: .75rem; font-weight: 700; color: var(--accent);
-  background: var(--accent-soft); border-radius: 8px; padding: 2px 8px;
+  flex: 0 0 auto; font-size: .7rem; font-weight: 700; color: var(--accent);
+  background: var(--accent-soft); border-radius: 7px; padding: 1px 6px;
 }
-.echo-name { font-size: 1.2rem; font-weight: 700; color: var(--accent); }
-.echo-meta { font-size: .82rem; color: var(--text-2); }
+.echo-name { font-size: 1.12rem; font-weight: 700; color: var(--accent); }
+.echo-meta { font-size: .75rem; color: var(--text-2); margin-top: 2px; line-height: 1.4; }
 .echo-meta b { color: var(--text); font-weight: 600; }
 
 /* To Do:修改提醒事項 */
