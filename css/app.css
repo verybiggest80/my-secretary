@@ -590,3 +590,34 @@ body {
 .dx-opt.dx-info {
   background: var(--accent-soft); border-style: dashed; color: var(--accent); font-weight: 600;
 }
+
+/* 臨床工作:今日/明日切換列 + 腎超卡片 */
+.w-daybar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.w-daylab { font-size: .95rem; font-weight: 700; }
+.w-daylab.tm { color: var(--warn); }
+.w-daybar .cover-btn { margin-top: 0; }
+.echo-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; padding: 6px 0; }
+.echo-row + .echo-row { border-top: 1px solid var(--border); }
+.echo-slot {
+  flex: 0 0 auto; font-size: .75rem; font-weight: 700; color: var(--accent);
+  background: var(--accent-soft); border-radius: 8px; padding: 2px 8px;
+}
+.echo-name { font-size: 1.2rem; font-weight: 700; color: var(--accent); }
+.echo-meta { font-size: .82rem; color: var(--text-2); }
+.echo-meta b { color: var(--text); font-weight: 600; }
+
+/* To Do:修改提醒事項 */
+.todo-edit {
+  flex: 0 0 auto; border: 1px solid var(--border); background: var(--card); color: var(--text-2);
+  border-radius: 8px; font-size: .78rem; padding: 4px 8px;
+}
+.todo-item.editing { gap: 8px; padding: 8px 10px; border-color: var(--accent); }
+.todo-edit-in {
+  flex: 1; min-width: 0; padding: 9px 10px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 1rem;
+}
+.todo-save, .todo-cancel {
+  flex: 0 0 auto; border: none; border-radius: 10px; padding: 8px 12px; font-size: .85rem; font-weight: 600;
+}
+.todo-save { background: var(--accent); color: #fff; }
+.todo-cancel { background: var(--accent-soft); color: var(--accent); }

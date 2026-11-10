@@ -291,7 +291,7 @@ window.Pages.home = (function () {
       }
     }));
 
-    /* Cover 卡片:代查的主治醫師姓名可點,顯示帳密(帳密介面在會診頁的腳本內) */
+    /* Cover 卡片:代查的主治醫師姓名可點,顯示帳密(帳密介面在臨床工作頁的腳本內) */
     root.querySelectorAll('.cv-link').forEach((b) => b.addEventListener('click', (e) => {
       e.stopPropagation();
       const open = () => window.CredUI && window.CredUI.open(b.dataset.doc);

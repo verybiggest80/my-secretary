@@ -1,14 +1,16 @@
 /* vault.js — 帳密保險箱
-   資料只存在這台裝置的 localStorage,並以 PIN 經 PBKDF2 導出金鑰後用 AES-GCM 加密。
-   任何時候都不會上傳到網站或 GitHub;沒有 PIN 就解不開密文。 */
+   資料只存在這台裝置的 localStorage,不會上傳到網站或 GitHub。
+   免 PIN:以隨機產生、同樣只存在本機的裝置金鑰加密,開啟時自動解鎖。
+   舊版以 PIN 加密的保險箱:輸入最後一次 PIN(或 Face ID)解開後轉為免 PIN。 */
 window.Vault = (function () {
   const KEY = 'sec_vault';
+  const DK = 'sec_vault_dk';   /* 免 PIN 的裝置金鑰 */
   const ITER = 150000;
   const enc = new TextEncoder();
   const dec = new TextDecoder();
 
   let list = null;   /* 解鎖後的明文清單(僅存在記憶體) */
-  let pin = null;    /* 本次開啟期間暫存,供儲存時重新加密 */
+  let pin = null;    /* 目前使用的金鑰字串(裝置金鑰或舊 PIN),供儲存時重新加密 */
 
   const subtle = () => (window.crypto && window.crypto.subtle) || null;
   const b64 = (buf) => btoa(String.fromCharCode.apply(null, new Uint8Array(buf)));
@@ -24,6 +26,10 @@ window.Vault = (function () {
   function raw() {
     try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; }
   }
+  function devKey() {
+    try { return localStorage.getItem(DK) || null; } catch (e) { return null; }
+  }
+  function newDevKey() { return b64(crypto.getRandomValues(new Uint8Array(32))); }
 
   async function persist() {
     const salt = crypto.getRandomValues(new Uint8Array(16));
@@ -33,27 +39,58 @@ window.Vault = (function () {
     localStorage.setItem(KEY, JSON.stringify({ v: 1, salt: b64(salt), iv: b64(iv), ct: b64(ct) }));
   }
 
+  async function create(p) { list = []; pin = p; await persist(); }
+
+  /* 以金鑰字串解鎖;錯誤會拋出例外 */
+  async function unlock(p) {
+    const o = raw();
+    if (!o) throw new Error('尚未建立');
+    const key = await deriveKey(p, unb64(o.salt));
+    const pt = await subtle().decrypt({ name: 'AES-GCM', iv: unb64(o.iv) }, key, unb64(o.ct));
+    list = JSON.parse(dec.decode(pt));
+    pin = p;
+    return true;
+  }
+
   return {
     available() { return !!subtle(); },
     exists() { return !!raw(); },
     unlocked() { return list !== null; },
+    auto() { return !!devKey(); },
 
-    /* 首次建立保險箱 */
-    async create(p) { list = []; pin = p; await persist(); },
-
-    /* 以 PIN 解鎖;PIN 錯誤會拋出例外 */
-    async unlock(p) {
-      const o = raw();
-      if (!o) throw new Error('尚未建立');
-      const key = await deriveKey(p, unb64(o.salt));
-      const pt = await subtle().decrypt({ name: 'AES-GCM', iv: unb64(o.iv) }, key, unb64(o.ct));
-      list = JSON.parse(dec.decode(pt));
-      pin = p;
-      return true;
+    /* 免 PIN 開啟:沒有保險箱就直接建立;有裝置金鑰就自動解鎖。
+       回傳 false 表示是舊版 PIN 保險箱,需要輸入一次 PIN 轉換 */
+    async open() {
+      if (list) return true;
+      if (!raw()) {
+        const k = newDevKey();
+        localStorage.setItem(DK, k);
+        await create(k);
+        return true;
+      }
+      const k = devKey();
+      if (!k) return false;
+      try { await unlock(k); return true; } catch (e) { return false; }
     },
 
+    /* 舊版 PIN 保險箱解開後,改用新的裝置金鑰重新加密(之後免 PIN) */
+    async dropPin() {
+      if (!list) throw new Error('未解鎖');
+      const k = newDevKey();
+      const old = pin;
+      const oldK = devKey();
+      localStorage.setItem(DK, k);
+      pin = k;
+      try { await persist(); } catch (e) {
+        pin = old;
+        if (oldK) localStorage.setItem(DK, oldK); else localStorage.removeItem(DK);
+        throw e;
+      }
+    },
+
+    create,
+    unlock,
     lock() { list = null; pin = null; },
-    /* 解鎖期間才取得得到;供啟用 Face ID 時綁定,避免再彈出輸入框 */
     currentPin() { return list ? pin : null; },
     all() { return list ? list.slice() : []; },
 
@@ -79,25 +116,7 @@ window.Vault = (function () {
       await persist();
     },
 
-    async changePin(p) {
-      if (!list) throw new Error('未解鎖');
-      pin = p;
-      await persist();
-    },
-
-    /* 匯出的是密文,可安全放雲端;匯入後仍需原 PIN 才解得開 */
-    exportBlob() {
-      const o = raw();
-      return o ? new Blob([JSON.stringify(o)], { type: 'application/json' }) : null;
-    },
-    async importText(text) {
-      const o = JSON.parse(text);
-      if (!o || !o.ct || !o.salt || !o.iv) throw new Error('格式不符');
-      localStorage.setItem(KEY, JSON.stringify(o));
-      list = null; pin = null;
-    },
-
-    destroy() { localStorage.removeItem(KEY); list = null; pin = null; }
+    destroy() { localStorage.removeItem(KEY); localStorage.removeItem(DK); list = null; pin = null; }
   };
 })();
 

@@ -6,6 +6,7 @@ window.Pages.todo = (function () {
   let root, headerBtn, titleEl;
   let filter = ls.get('todoFilter', 'open'); // 'open' | 'all'
   let view = 'todo';                          // 'todo' | 'rounds'
+  let editingId = null;                       // 正在修改的提醒事項 id
 
   /* ---------- 復大查房備忘 ---------- */
   const ZONES = [
@@ -218,13 +219,19 @@ window.Pages.todo = (function () {
         <button data-f="all" class="${filter === 'all' ? 'active' : ''}">全部</button>
       </div>
       <ul class="todo-list">
-        ${shown.map((t) => `
+        ${shown.map((t) => (t.id === editingId ? `
+          <li class="todo-item editing" data-id="${t.id}">
+            <input class="todo-edit-in" type="text" value="${esc(t.text)}" enterkeyhint="done" aria-label="修改提醒事項">
+            <button class="todo-save">儲存</button>
+            <button class="todo-cancel">取消</button>
+          </li>` : `
           <li class="todo-item ${t.done ? 'done' : ''}" data-id="${t.id}">
             <button class="todo-check ${t.done ? 'done' : ''}" aria-label="完成">✓</button>
             <span class="todo-text">${esc(t.text)}${t.audioId ? ` <span class="audio-tag">🎤 ${fmt(t.audioDur || 0)}</span>` : ''}</span>
             ${t.audioId ? '<button class="todo-play" aria-label="播放語音">▶</button>' : ''}
+            <button class="todo-edit" aria-label="修改">修改</button>
             <button class="todo-del" aria-label="刪除">✕</button>
-          </li>`).join('')}
+          </li>`)).join('')}
       </ul>
       ${shown.length === 0 ? `<div class="empty-hint">${filter === 'open' ? '沒有未完成的事項 🎉' : '還沒有任何事項,新增一筆吧'}</div>` : ''}
     `;
@@ -236,6 +243,7 @@ window.Pages.todo = (function () {
       const arr = todos();
       arr.unshift({ id: Date.now(), text, done: false });
       save(arr);
+      editingId = null;
       render();
       root.querySelector('#todo-new').focus();
     };
@@ -255,6 +263,37 @@ window.Pages.todo = (function () {
     root.querySelectorAll('.todo-item').forEach((li) => {
       const id = Number(li.dataset.id);
       const item = all.find((t) => t.id === id);
+
+      /* 修改中:Enter/儲存 寫回,Esc/取消 放棄;清空視為不修改 */
+      if (li.classList.contains('editing')) {
+        const inp = li.querySelector('.todo-edit-in');
+        const commit = () => {
+          const v = inp.value.trim();
+          if (v) {
+            const arr = todos();
+            const it = arr.find((t) => t.id === id);
+            if (it) { it.text = v; save(arr); }
+          }
+          editingId = null;
+          render();
+        };
+        const cancel = () => { editingId = null; render(); };
+        li.querySelector('.todo-save').addEventListener('click', commit);
+        li.querySelector('.todo-cancel').addEventListener('click', cancel);
+        inp.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') commit();
+          else if (e.key === 'Escape') cancel();
+        });
+        inp.focus();
+        const len = inp.value.length;
+        try { inp.setSelectionRange(len, len); } catch (err) { /* 部分瀏覽器不支援 */ }
+        return;
+      }
+
+      li.querySelector('.todo-edit').addEventListener('click', () => {
+        editingId = id;
+        render();
+      });
       li.querySelector('.todo-check').addEventListener('click', () => {
         const arr = todos();
         const it = arr.find((t) => t.id === id);
@@ -280,6 +319,6 @@ window.Pages.todo = (function () {
       headerBtn = ctx && ctx.headerBtn;
       titleEl = ctx && ctx.titleEl;
     },
-    show() { draw(); }
+    show() { editingId = null; draw(); }
   };
 })();

@@ -1,4 +1,4 @@
-/* work.js — 會診分頁:當日會診/值班/內外ICU + 醫師通訊錄 + 班表檔案 + CRRT FF 計算器 */
+/* work.js — 臨床工作分頁:當日會診/值班/內外ICU/腎超(可看明日) + 醫師通訊錄 + 班表檔案 + CRRT FF 計算器 */
 window.Pages.work = (function () {
   const ls = window.Store.ls;
 
@@ -47,6 +47,7 @@ window.Pages.work = (function () {
   const fileStore = window.Store.fileStore;
 
   let zoneTomorrow = false;   /* 復大分區卡片:false=今天, true=明天 */
+  let menuTomorrow = false;   /* 臨床工作首頁:false=今日, true=明日 */
 
   /* 區域代號依開頭字母(A/B/H)分色 */
   function zoneHtml(group) {
@@ -92,9 +93,9 @@ window.Pages.work = (function () {
     };
   }
 
-  /* 取得今日資訊;若當月無班表資料回傳 null */
-  function todayInfo() {
-    const now = new Date();
+  /* 取得指定日期(預設現在)的資訊;若當月無班表資料回傳 null */
+  function todayInfo(at) {
+    const now = at ? new Date(at.getTime()) : new Date();
     const md = monthData(now);
     if (!md) return null;
     const d = now.getDate();
@@ -128,8 +129,28 @@ window.Pages.work = (function () {
       icu: findDoc(icuName, md), icuNote,
       licu: findDoc(md.licu || null, md),
       icuMed: findDoc(inRange(md.icuMed), md),
-      icuSurg: findDoc(inRange(md.icuSurg), md)
+      icuSurg: findDoc(inRange(md.icuSurg), md),
+      /* 腎超(腎臟科班表):上午/下午負責超音波的主治醫師,沒排則為 null */
+      echoAM: (md.vsDuty && md.vsDuty.echoAM && md.vsDuty.echoAM[d]) ? findDoc(md.vsDuty.echoAM[d], md) : null,
+      echoPM: (md.vsDuty && md.vsDuty.echoPM && md.vsDuty.echoPM[d]) ? findDoc(md.vsDuty.echoPM[d], md) : null
     };
+  }
+
+  /* 腎超卡片:上午/下午各一列(姓名・代號・電話) */
+  function echoTile(info, word) {
+    const row = (slot, doc) => `
+      <div class="echo-row">
+        <span class="echo-slot">${slot}</span>
+        <span class="echo-name">${doc ? esc(doc.name) : '—'}</span>
+        ${doc ? `<span class="echo-meta">代號 <b>${esc(doc.code)}</b>・☎ <b>${esc(doc.phone)}</b></span>` : ''}
+      </div>`;
+    return `
+      <div class="tile bar echo-tile" id="w-echo">
+        <h3>${KIDNEY_SVG(17)} 腎超</h3>
+        ${(info.echoAM || info.echoPM)
+          ? `<div>${row('上午', info.echoAM)}${row('下午', info.echoPM)}</div>`
+          : `<div class="tile-sub">${word}沒有排腎超</div>`}
+      </div>`;
   }
 
   function docTile(id, icon, title, doc, note) {
@@ -148,9 +169,17 @@ window.Pages.work = (function () {
   /* ---------- 主選單(方塊) ---------- */
   function renderMenu() {
     ensureData(() => {
-      const info = todayInfo();
-      const SD = window.ScheduleData;
+      /* 看看明日:整頁(會診/值班/ICU/腎超)改看明天;以明天中午計算,不套 07:30 交接 */
       const now = new Date();
+      if (menuTomorrow) { now.setDate(now.getDate() + 1); now.setHours(12, 0, 0, 0); }
+      const info = todayInfo(now);
+      const SD = window.ScheduleData;
+      const dayWord = menuTomorrow ? '明日' : '今日';
+      const dayBar = `
+        <div class="w-daybar">
+          <span class="w-daylab${menuTomorrow ? ' tm' : ''}">📅 ${dayWord} ${now.getMonth() + 1}/${now.getDate()}(${'日一二三四五六'[now.getDay()]})</span>
+          <button id="w-day" class="cover-btn">${menuTomorrow ? '回到今日' : '看看明日'}</button>
+        </div>`;
 
       let tilesHtml;
       if (info) {
@@ -165,16 +194,18 @@ window.Pages.work = (function () {
           ${docTile('w-oncall', '🌙', '值班', info.oncall, info.oncallNote)}
           ${docTile('w-icu-med', '🫁', '內ICU', info.icuMed)}
           ${docTile('w-icu-surg', '😷', '外ICU', info.icuSurg)}`;
+        tilesHtml += echoTile(info, dayWord);
       } else {
         const have = SD && SD.months ? Object.keys(SD.months).sort().join('、') : '無';
         tilesHtml = `
           <div class="tile bar">
-            <h3>⚠️ 本月班表尚未更新</h3>
+            <h3>⚠️ ${now.getMonth() + 1}月班表尚未更新</h3>
             <div class="tile-sub">現有資料:${have};請提供 ${ymOf(now)} 的班表給 Claude 更新。</div>
           </div>`;
       }
 
       root.innerHTML = `
+        ${dayBar}
         <div class="tile-grid">
           ${tilesHtml}
           <div class="tile bar" id="w-dir">
@@ -194,6 +225,10 @@ window.Pages.work = (function () {
         </div>
         <div class="formula-hint" style="margin-top:8px">資料來源:${ymOf(now)} 班表(${SD ? SD.updated : '—'} 更新)</div>`;
 
+      root.querySelector('#w-day').addEventListener('click', () => {
+        menuTomorrow = !menuTomorrow;
+        renderMenu();
+      });
       root.querySelector('#w-dir').addEventListener('click', renderDirectory);
       root.querySelector('#w-helper').addEventListener('click', renderHelper);
       root.querySelector('#w-schedule').addEventListener('click', renderSchedule);
@@ -207,7 +242,7 @@ window.Pages.work = (function () {
     div.querySelector('button').addEventListener('click', handler);
     return div;
   }
-  function backRow() { return backRowTo('← 會診', renderMenu); }
+  function backRow() { return backRowTo('← 臨床工作', renderMenu); }
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -346,7 +381,9 @@ window.Pages.work = (function () {
       <div class="pin-err" id="pin-err"></div>
       <button id="pin-go" class="btn-primary">${mode === 'create' ? '建立' : '解鎖'}</button>
       ${mode === 'unlock' && window.Bio && window.Bio.enabled()
-        ? '<button id="pin-bio" class="btn-secondary" style="margin-top:8px">🙂 用 Face ID 解鎖</button>' : ''}`;
+        ? '<button id="pin-bio" class="btn-secondary" style="margin-top:8px">🙂 用 Face ID 解鎖</button>' : ''}
+      ${mode === 'unlock'
+        ? '<button id="pin-reset" class="btn-secondary" style="margin-top:8px">忘記 PIN?清空帳密重新開始</button>' : ''}`;
     const err = (m) => { box.querySelector('#pin-err').textContent = m || ''; };
     const go = async () => {
       const a = box.querySelector('#pin-a').value.trim();
@@ -370,6 +407,15 @@ window.Pages.work = (function () {
         } catch (e) {
           err('Face ID 解鎖失敗,請改用 PIN');
         }
+      });
+    }
+    const resetBtn = box.querySelector('#pin-reset');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', async () => {
+        if (!window.confirm('清空這台裝置上儲存的所有醫師帳密?(圖片備份不受影響,此動作無法復原)')) return;
+        V().destroy();
+        if (window.Bio) window.Bio.disable();
+        try { await V().open(); err(''); onOk(); } catch (e) { err('無法建立,請再試一次'); }
       });
     }
     box.querySelectorAll('input').forEach((i) =>
@@ -454,21 +500,39 @@ window.Pages.work = (function () {
     refresh().catch(() => {
       body.innerHTML = '<div class="empty-hint" style="padding:16px 0">此瀏覽器無法使用本機儲存(可能是無痕模式)</div>';
     });
-    /* --- 帳密卡片排在圖片備份下方;未解鎖時只顯示 PIN 表單 --- */
-    if (!V().unlocked()) {
-      root.appendChild(pinForm(V().exists() ? 'unlock' : 'create', renderCreds));
-      window.scrollTo(0, 0);
-      return;
+    /* --- 帳密卡片排在圖片備份下方;免 PIN 直接開啟(舊版 PIN 保險箱需輸入最後一次 PIN 轉換) --- */
+    const slot = document.createElement('div');
+    root.appendChild(slot);
+    const showCard = () => { slot.innerHTML = ''; slot.appendChild(credCard()); };
+    const fail = () => {
+      slot.innerHTML = '<div class="work-card"><h2>🔑 帳密</h2><div class="empty-hint" style="padding:16px 0">帳密資料無法開啟,請重新整理後再試</div></div>';
+    };
+    if (V().unlocked()) showCard();
+    else {
+      V().open().then((ok) => {
+        if (ok) { showCard(); return; }
+        slot.appendChild(pinForm('unlock', () => { migrate().then(showCard, fail); }, MIGRATE_HINT));
+      }).catch(fail);
     }
+    window.scrollTo(0, 0);
+  }
 
-    /* --- 已解鎖:醫師帳密清單 --- */
+  /* 舊版 PIN 保險箱:用 PIN(或 Face ID)解開後改為免 PIN,原本的 Face ID 綁定一併移除 */
+  const MIGRATE_HINT = '帳密已改為免 PIN。請最後輸入一次原本的 PIN(或用 Face ID),之後就不用再輸入了。';
+  async function migrate() {
+    await V().dropPin();
+    if (window.Bio && window.Bio.enabled()) window.Bio.disable();
+  }
+
+  /* 醫師帳密清單卡片 */
+  function credCard() {
     const card = document.createElement('div');
     card.className = 'work-card';
     const items = V().all();
     card.innerHTML = `
-      <h2>🔑 帳密<button id="cr-lock" class="cover-btn" style="float:right;margin:0">鎖定</button></h2>
+      <h2>🔑 帳密</h2>
       <div class="tile-sub" style="color:var(--text-2);font-size:.78rem;line-height:1.6;margin-bottom:10px">
-        以 PIN 加密後只存在這台裝置,不會上傳。換手機或清除瀏覽器資料就會消失。
+        只存在這台裝置,不會上傳。換手機或清除瀏覽器資料就會消失。
       </div>
       <div id="cr-items">${items.length
         ? items.map((it) => `
@@ -479,16 +543,7 @@ window.Pages.work = (function () {
             <button class="cv-del" data-n="${esc(it.name)}">✕</button>
           </div>`).join('')
         : '<div class="empty-hint" style="padding:14px 0">尚未建立任何帳密</div>'}</div>
-      <button id="cr-add" class="btn-primary">新增醫師帳密</button>
-      <div class="rz-btns">
-        <button id="cr-export" class="cover-btn">匯出加密備份</button>
-        <button id="cr-pin" class="cover-btn">變更 PIN</button>
-        <button id="cr-bio" class="cover-btn"></button>
-      </div>
-      <div class="pin-err" id="cr-bio-msg"></div>`;
-    root.appendChild(card);
-
-    card.querySelector('#cr-lock').addEventListener('click', () => { V().lock(); renderCreds(); });
+      <button id="cr-add" class="btn-primary">新增醫師帳密</button>`;
     card.querySelector('#cr-add').addEventListener('click', () => credEditor(''));
     card.querySelectorAll('.cv-edit').forEach((b) =>
       b.addEventListener('click', () => credEditor(b.dataset.n)));
@@ -497,61 +552,7 @@ window.Pages.work = (function () {
         if (!window.confirm(`刪除「${b.dataset.n}」的帳密?`)) return;
         await V().remove(b.dataset.n); renderCreds();
       }));
-    card.querySelector('#cr-export').addEventListener('click', () => {
-      const blob = V().exportBlob();
-      if (!blob) return;
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'vault-backup.json';
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 30000);
-    });
-    /* Face ID:啟用需要目前的 PIN,才能把它加密保存 */
-    (async () => {
-      const btn = card.querySelector('#cr-bio');
-      const msg = card.querySelector('#cr-bio-msg');
-      const ok = window.Bio && window.Bio.supported() && await window.Bio.platformAvailable();
-      if (!ok) { btn.style.display = 'none'; msg.textContent = ''; return; }
-      const draw = () => { btn.textContent = window.Bio.enabled() ? '停用 Face ID' : '啟用 Face ID'; };
-      draw();
-      btn.addEventListener('click', async () => {
-        msg.textContent = '';
-        if (window.Bio.enabled()) { window.Bio.disable(); draw(); return; }
-        /* 保險箱已解鎖,直接沿用記憶體中的 PIN;不可用 prompt(會讓視窗失去焦點) */
-        const p = V().currentPin();
-        if (!p) { msg.textContent = '請先解鎖保險箱'; return; }
-        msg.textContent = '請完成 Face ID 驗證…';
-        try {
-          await window.Bio.enable(p);
-          draw();
-          msg.textContent = '已啟用,下次可用 Face ID 解鎖';
-        } catch (e) {
-          const m = String((e && e.message) || '');
-          msg.textContent = /not focused/i.test(m) ? '請先點一下畫面再試一次'
-            : /NotAllowed|AbortError/i.test((e && e.name) || '') ? '已取消或驗證失敗'
-            : (m || '此裝置不支援');
-        }
-      });
-    })();
-
-    card.querySelector('#cr-pin').addEventListener('click', () => {
-      const msg = card.querySelector('#cr-bio-msg');
-      const row = document.createElement('div');
-      row.className = 'field';
-      row.innerHTML = `<label>新的 PIN(至少 4 位)</label>
-        <input id="np-a" type="password" inputmode="numeric" autocomplete="off">
-        <button id="np-go" class="cover-btn" style="margin-top:8px">確認變更</button>`;
-      card.querySelector('#cr-pin').replaceWith(row);
-      row.querySelector('#np-go').addEventListener('click', async () => {
-        const np = row.querySelector('#np-a').value.trim();
-        if (np.length < 4) { msg.textContent = 'PIN 至少 4 位'; return; }
-        await V().changePin(np);
-        if (window.Bio && window.Bio.enabled()) window.Bio.disable();   /* 舊的 Face ID 綁定已失效 */
-        renderCreds();
-      });
-    });
-
-    window.scrollTo(0, 0);
+    return card;
   }
 
   /* 新增/編輯單筆帳密 */
@@ -585,7 +586,7 @@ window.Pages.work = (function () {
     window.scrollTo(0, 0);
   }
 
-  /* 從其他分頁(如首頁 Cover 卡片)開啟時,先切到會診頁再進編輯畫面 */
+  /* 從其他分頁(如首頁 Cover 卡片)開啟時,先切到臨床工作頁再進編輯畫面 */
   function goEditor(name) {
     const onWork = root && root.classList && root.classList.contains('active');
     if (onWork || !window.navigateTo) { credEditor(name); return; }
@@ -608,9 +609,14 @@ window.Pages.work = (function () {
         return;
       }
       if (!V().unlocked()) {
-        box.innerHTML = `<h3>🔒 ${esc(name)}</h3>`;
-        box.appendChild(pinForm(V().exists() ? 'unlock' : 'create', draw, '解鎖後可查看此醫師的帳密。'));
-        box.querySelector('.work-card').classList.add('cv-inline');
+        box.innerHTML = `<h3>${esc(name)}</h3><div class="cv-hint">開啟中…</div>`;
+        const fail = () => { box.innerHTML = `<h3>${esc(name)}</h3><div class="cv-hint">帳密資料無法開啟,請重新整理後再試</div>`; };
+        V().open().then((ok) => {
+          if (ok) { draw(); return; }
+          box.innerHTML = `<h3>🔒 ${esc(name)}</h3>`;
+          box.appendChild(pinForm('unlock', () => { migrate().then(draw, fail); }, MIGRATE_HINT));
+          box.querySelector('.work-card').classList.add('cv-inline');
+        }).catch(fail);
         return;
       }
       const it = V().find(name);
@@ -1630,6 +1636,7 @@ window.Pages.work = (function () {
     show(subview) {
       ensureData(() => {
         zoneTomorrow = false;
+        menuTomorrow = false;
         if (subview === 'schedule') renderSchedule();
         else if (subview === 'crrt') renderCRRT();
         else if (subview === 'directory') renderDirectory();
